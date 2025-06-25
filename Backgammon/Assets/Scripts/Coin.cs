@@ -63,7 +63,7 @@ public class Coin : MonoBehaviour
         currentTower = tower;
         Debug.Log($"Coin {gameObject.name} placed on Tower: {tower.name}");
     }
-
+    
     // Optional: to clear tower info when removed
     public void ClearTower()
     {
