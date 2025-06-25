@@ -6,7 +6,14 @@ public class CanvasManager : MonoBehaviour
     public List<Dice> p1Dice = new ();
     public List<Dice> p2Dice = new ();
 
-    private void SetPlayerDice()
+    public static CanvasManager Instance;
+
+    void Awake()
+    {
+        Instance = this;
+    }
+
+    public void SetPlayerDice()
     {
         DisableDice();
         EnableDice(GameManager.Instance.CurrentPlayer);
@@ -40,6 +47,18 @@ public class CanvasManager : MonoBehaviour
             {
                 dice.gameObject.SetActive(true);
             }
+        }
+    }
+
+    public int[] ShuffleDiceAndReturnValues(int turnIndex)
+    {
+        if (turnIndex == 0)
+        {
+            return new []{p1Dice[0].Roll(), p1Dice[1].Roll()};
+        }
+        else
+        {
+            return new []{p2Dice[0].Roll(), p2Dice[1].Roll()};
         }
     }
 }

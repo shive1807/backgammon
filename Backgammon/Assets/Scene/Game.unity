@@ -2657,6 +2657,7 @@ MonoBehaviour:
   selectedCoin: {fileID: 0}
   player1Coins: []
   player2Coins: []
+  Ring: {fileID: 0}
 --- !u!1 &1047020652
 GameObject:
   m_ObjectHideFlags: 0
@@ -4999,6 +5000,7 @@ GameObject:
   - component: {fileID: 2064539459}
   - component: {fileID: 2064539458}
   - component: {fileID: 2064539457}
+  - component: {fileID: 2064539461}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -5091,6 +5093,24 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &2064539461
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2064539456}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8aebfc4aaa04494389e527711606574, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  p1Dice:
+  - {fileID: 719245227}
+  - {fileID: 2435435}
+  p2Dice:
+  - {fileID: 438781364}
+  - {fileID: 584604811}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

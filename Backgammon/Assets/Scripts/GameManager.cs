@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public enum GameState
 {
+    Idle,
     Setup,
     RollDice,
     PlayerMove,
@@ -14,16 +15,17 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    public GameState currentState;
+    public GameState currentState = GameState.Idle;
 
     public Dice dice1;  // Reference to your Dice component
     public Dice dice2;
     public Coin selectedCoin; // The coin selected for movement
     public List<Coin> player1Coins;
     public List<Coin> player2Coins;
+    public Ring Ring;
 
     private int[] diceValues;
-    private int currentPlayer = 1;
+    private int currentPlayer = 0;
 
     void Awake()
     {
@@ -46,7 +48,7 @@ public class GameManager : MonoBehaviour
                 // Could auto-roll or wait for player to tap
                 if (Input.GetKeyDown(KeyCode.Space)) // Replace with button tap
                 {
-                    diceValues = new [] { dice1.Roll(), dice1.Roll() };
+                    diceValues = CanvasManager.Instance.ShuffleDiceAndReturnValues(currentPlayer);
                     Debug.Log($"Player {currentPlayer} rolled: {diceValues[0]} and {diceValues[1]}");
                     TransitionToState(GameState.PlayerMove);
                 }
@@ -57,7 +59,8 @@ public class GameManager : MonoBehaviour
                 break;
 
             case GameState.SwitchTurn:
-                currentPlayer = 3 - currentPlayer; // Toggle 1 <-> 2
+                currentPlayer++; // Toggle 1 <-> 2
+                currentPlayer %= 2;
                 TransitionToState(GameState.RollDice);
                 break;
 
@@ -79,6 +82,7 @@ public class GameManager : MonoBehaviour
                 break;
 
             case GameState.RollDice:
+                CanvasManager.Instance.SetPlayerDice();
                 break;
 
             case GameState.PlayerMove:

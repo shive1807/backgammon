@@ -1,16 +1,20 @@
+using System;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class Coin : MonoBehaviour
 {
     // Reference to the tower this coin is currently placed on
     public Tower currentTower;
 
-    private Camera mainCamera;
+    private Camera _mainCamera;
+    
+    // C# Event: Raised when this coin is clicked
+    public event Action<Coin> OnCoinClicked;
+
 
     void Start()
     {
-        mainCamera = Camera.main;
+        _mainCamera = Camera.main;
         Debug.Log($"Coin {gameObject.name} initialized.");
     }
 
@@ -25,7 +29,7 @@ public class Coin : MonoBehaviour
 
     void HandleTouchOrClick()
     {
-        Vector2 worldPoint = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 worldPoint = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
         RaycastHit2D hit = Physics2D.Raycast(worldPoint, Vector2.zero);
 
         if (hit.collider != null)
@@ -38,6 +42,8 @@ public class Coin : MonoBehaviour
 
                 if (currentTower != null)
                 {
+                    var diceValues = GameManager.Instance.GetDiceValues();
+                    OnCoinClicked.Invoke(this);
                     Debug.Log($"Coin {gameObject.name} is currently on Tower: {currentTower.name}");
                 }
                 else
