@@ -48,14 +48,16 @@ public class Tower : MonoBehaviour
             Debug.LogWarning("Attempted to add opponent's checker to this tower.");
             return;
         }
-
+        
+        checker.GetComponent<Coin>().SetCurrentTower(this);
+        
         // Add to the checker stack
         Checkers.Push(checker);
 
         // Make it a child of this tower for scene hierarchy organization
         checker.transform.SetParent(transform);
 
-        // Determine stacking direction based on index
+        // Determine a stacking direction based on index
         Vector3 direction = TowerIndex <= 11 ? Vector3.up : Vector3.down;
 
         // Position the checker visually based on stack height and direction
