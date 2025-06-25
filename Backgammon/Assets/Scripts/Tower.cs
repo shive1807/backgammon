@@ -1,0 +1,128 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+/// <summary>
+/// Represents a single tower (point) on the Backgammon board.
+/// Responsible for managing a stack of checkers and tracking ownership.
+/// </summary>
+public class Tower : MonoBehaviour
+{
+    // The index of this tower on the board (0 to 23)
+    public int TowerIndex { get; private set; }
+
+    // Stack to hold the checkers currently on this tower
+    private Stack<GameObject> Checkers { get; set; } = new Stack<GameObject>();
+
+    // ID of the player who currently owns this tower (-1 means unoccupied)
+    private int OwnerPlayerId { get; set; } = -1;
+
+    [Header("Checker Positioning")]
+    // The spawn point (base) where the first checker appears
+    [SerializeField] private Transform checkerSpawnPoint;
+
+    // Offset applied for each additional checker (for stacking visuals)
+    [SerializeField] private float checkerOffsetY = 0.5f;
+
+    /// <summary>
+    /// Sets the tower's index (usually done at initialization time).
+    /// </summary>
+    /// <param name="index">Tower index from 0 to 23.</param>
+    public void Initialize(int index)
+    {
+        TowerIndex = index;
+        checkerSpawnPoint = transform;
+    }
+
+    /// <summary>
+    /// Adds a checker to this tower.
+    /// Sets the tower's ownership if it's the first checker.
+    /// Prevents adding an opponent's checker if it's already owned.
+    /// </summary>
+    /// <param name="checker">The checker GameObject to add.</param>
+    /// <param name="playerId">The ID of the player owning the checker.</param>
+    public void AddChecker(GameObject checker, int playerId)
+    {
+        // If the tower is empty, assign ownership
+        if (Checkers.Count == 0)
+        {
+            OwnerPlayerId = playerId;
+        }
+        // Disallow placing opponent's checker if already owned
+        else if (OwnerPlayerId != playerId)
+        {
+            Debug.LogWarning("Attempted to add opponent's checker to this tower.");
+            return;
+        }
+
+        // Add to the checker stack
+        Checkers.Push(checker);
+
+        // Make it a child of this tower for scene hierarchy organization
+        checker.transform.SetParent(transform);
+
+        // Position the checker visually based on stack height
+        Vector3 newPos = checkerSpawnPoint.position + Vector3.up * checkerOffsetY * (Checkers.Count - 1);
+        checker.transform.position = newPos;
+    }
+
+    /// <summary>
+    /// Removes and returns the top checker from this tower.
+    /// Clears ownership if the tower becomes empty.
+    /// </summary>
+    /// <returns>The removed checker GameObject, or null if empty.</returns>
+    public GameObject RemoveTopChecker()
+    {
+        if (Checkers.Count == 0)
+            return null;
+
+        GameObject topChecker = Checkers.Pop();
+
+        // Reset ownership if the tower is now empty
+        if (Checkers.Count == 0)
+        {
+            OwnerPlayerId = -1;
+        }
+
+        return topChecker;
+    }
+
+    /// <summary>
+    /// Peeks at the top checker without removing it.
+    /// </summary>
+    /// <returns>The top checker GameObject, or null if none.</returns>
+    public GameObject PeekTopChecker()
+    {
+        return Checkers.Count > 0 ? Checkers.Peek() : null;
+    }
+
+    /// <summary>
+    /// Gets the number of checkers currently on the tower.
+    /// </summary>
+    public int CheckerCount => Checkers.Count;
+
+    /// <summary>
+    /// Checks if the tower is currently owned by the given player.
+    /// </summary>
+    /// <param name="playerId">Player ID to check against.</param>
+    /// <returns>True if owned by that player, false otherwise.</returns>
+    public bool IsOwnedBy(int playerId) => OwnerPlayerId == playerId;
+
+    /// <summary>
+    /// Checks whether the tower is empty.
+    /// </summary>
+    public bool IsEmpty() => Checkers.Count == 0;
+
+    /// <summary>
+    /// Clears all checkers from the tower (used during reset).
+    /// </summary>
+    public void ClearTower()
+    {
+        foreach (var checker in Checkers)
+        {
+            Destroy(checker); // Remove from a scene
+        }
+
+        Checkers.Clear();
+        OwnerPlayerId = -1;
+    }
+}
