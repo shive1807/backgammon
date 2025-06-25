@@ -16,12 +16,8 @@ public class Tower : MonoBehaviour
     // ID of the player who currently owns this tower (-1 means unoccupied)
     private int OwnerPlayerId { get; set; } = -1;
 
-    [Header("Checker Positioning")]
-    // The spawn point (base) where the first checker appears
-    [SerializeField] private Transform checkerSpawnPoint;
-
     // Offset applied for each additional checker (for stacking visuals)
-    [SerializeField] private float checkerOffsetY = 0.5f;
+    private const float CheckerOffsetY = 0.2f;
 
     /// <summary>
     /// Sets the tower's index (usually done at initialization time).
@@ -30,7 +26,6 @@ public class Tower : MonoBehaviour
     public void Initialize(int index)
     {
         TowerIndex = index;
-        checkerSpawnPoint = transform;
     }
 
     /// <summary>
@@ -60,8 +55,11 @@ public class Tower : MonoBehaviour
         // Make it a child of this tower for scene hierarchy organization
         checker.transform.SetParent(transform);
 
-        // Position the checker visually based on stack height
-        Vector3 newPos = checkerSpawnPoint.position + Vector3.up * checkerOffsetY * (Checkers.Count - 1);
+        // Determine stacking direction based on index
+        Vector3 direction = TowerIndex <= 11 ? Vector3.up : Vector3.down;
+
+        // Position the checker visually based on stack height and direction
+        Vector3 newPos = transform.position + direction * CheckerOffsetY * (Checkers.Count - 1);
         checker.transform.position = newPos;
     }
 
@@ -119,7 +117,7 @@ public class Tower : MonoBehaviour
     {
         foreach (var checker in Checkers)
         {
-            Destroy(checker); // Remove from a scene
+            Destroy(checker); // Remove from scene
         }
 
         Checkers.Clear();
