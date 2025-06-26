@@ -26,6 +26,7 @@ public class GameManager : MonoBehaviour
 
     private int[] diceValues;
     private int currentPlayer = 0;
+    
 
     void Awake()
     {

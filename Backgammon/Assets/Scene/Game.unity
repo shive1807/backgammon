@@ -2044,6 +2044,7 @@ MonoBehaviour:
   whiteTowerStack: {fileID: 1970050003}
   blackTowerStack: {fileID: 2002342874}
   coinPrefab: {fileID: 2295515244907595222, guid: 8874b171fda31408e948179062473fdb, type: 3}
+  ringPrefab: {fileID: 2295515244907595222, guid: 94f6cc808866644f1a8fb00bb3af6562, type: 3}
 --- !u!1 &706869594
 GameObject:
   m_ObjectHideFlags: 0

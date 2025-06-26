@@ -3,6 +3,7 @@ using UnityEngine;
 public class Ring : MonoBehaviour
 {
     private SpriteRenderer spriteRenderer;
+    public Tower currentTower;
 
     void Start()
     {
@@ -13,6 +14,12 @@ public class Ring : MonoBehaviour
         {
             Debug.LogError("SpriteRenderer not found on Ring object.");
         }
+    }
+    
+    public void SetCurrentTower(Tower tower)
+    {
+        currentTower = tower;
+        Debug.Log($"Coin {gameObject.name} placed on Tower: {tower.name}");
     }
 
     // Set the ring color to green

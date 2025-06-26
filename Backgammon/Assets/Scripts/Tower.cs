@@ -12,6 +12,7 @@ public class Tower : MonoBehaviour
 
     // Stack to hold the checkers currently on this tower
     private Stack<GameObject> Checkers { get; set; } = new Stack<GameObject>();
+    private Stack<GameObject> Rings { get; set; } = new Stack<GameObject>();
 
     // ID of the player who currently owns this tower (-1 means unoccupied)
     private int OwnerPlayerId { get; set; } = -1;
@@ -63,6 +64,36 @@ public class Tower : MonoBehaviour
         // Position the checker visually based on stack height and direction
         Vector3 newPos = transform.position + direction * CheckerOffsetY * (Checkers.Count - 1);
         checker.transform.position = newPos;
+    }
+    
+    public void AddRing(GameObject ring, int playerId)
+    {
+        // If the tower is empty, assign ownership
+        if (Checkers.Count == 0)
+        {
+            OwnerPlayerId = playerId;
+        }
+        // Disallow placing opponent's checker if already owned
+        else if (OwnerPlayerId != playerId)
+        {
+            Debug.LogWarning("Attempted to add opponent's checker to this tower.");
+            return;
+        }
+        
+        ring.GetComponent<Ring>().SetCurrentTower(this);
+        
+        // Add to the checker stack
+        Rings.Push(ring);
+
+        // Make it a child of this tower for scene hierarchy organization
+        ring.transform.SetParent(transform);
+
+        // Determine a stacking direction based on index
+        Vector3 direction = TowerIndex <= 11 ? Vector3.up : Vector3.down;
+
+        // Position the checker visually based on stack height and direction
+        Vector3 newPos = transform.position + direction * CheckerOffsetY * (Checkers.Count - 1);
+        ring.transform.position = newPos;
     }
 
     /// <summary>

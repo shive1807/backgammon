@@ -13,6 +13,8 @@ public class GameBoard : MonoBehaviour
     public Transform blackTowerStack; // For storing unused black coins
 
     public GameObject coinPrefab; // Prefab for checker coins
+    public GameObject ringPrefab;
+    private List<GameObject> _rings = new List<GameObject>();
 
     private void Start()
     {
@@ -66,7 +68,9 @@ public class GameBoard : MonoBehaviour
     {
         for (int i = 0; i < count; i++)
         {
-            GameObject coin = Instantiate(coinPrefab);
+            var coin = Instantiate(coinPrefab);
+            coin.GetComponent<Coin>().OnCoinClicked += OnCoinClicked;
+            
             if (playerId == 0)
             {
                 coin.name = $"WhiteChecker_{towerIndex}_{i}";
@@ -79,6 +83,42 @@ public class GameBoard : MonoBehaviour
             }
 
             towers[towerIndex].AddChecker(coin, playerId);
+        }
+    }
+    
+
+    private void OnCoinClicked(Tower tower)
+    {
+        foreach (var rings in _rings)
+        {
+            Destroy(rings);
+        }
+        _rings.Clear();
+        
+        var diceValues = GameManager.Instance.GetDiceValues();
+        foreach (var diceValue in diceValues)
+        {
+            var ring = Instantiate(ringPrefab);
+
+            var towerIndex = tower.TowerIndex;
+            var targetTowerIndex = towerIndex;
+            if (GameManager.Instance.CurrentPlayer == 0)
+            {
+                targetTowerIndex -= diceValue;
+            }
+            else
+            {
+                targetTowerIndex += diceValue;
+            }
+            
+            if (targetTowerIndex > towers.Count || targetTowerIndex < 0)
+            {
+                Destroy(ring);
+                continue;
+            }
+            
+            towers[targetTowerIndex].AddRing(ring, 0);
+            _rings.Add(ring);
         }
     }
 }

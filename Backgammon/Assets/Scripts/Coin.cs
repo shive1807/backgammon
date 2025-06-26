@@ -9,7 +9,7 @@ public class Coin : MonoBehaviour
     private Camera _mainCamera;
     
     // C# Event: Raised when this coin is clicked
-    public event Action<Coin> OnCoinClicked;
+    public event Action<Tower> OnCoinClicked;
 
 
     void Start()
@@ -43,7 +43,7 @@ public class Coin : MonoBehaviour
                 if (currentTower != null)
                 {
                     var diceValues = GameManager.Instance.GetDiceValues();
-                    OnCoinClicked.Invoke(this);
+                    OnCoinClicked.Invoke(currentTower);
                     Debug.Log($"Coin {gameObject.name} is currently on Tower: {currentTower.name}");
                 }
                 else
