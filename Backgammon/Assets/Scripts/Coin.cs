@@ -7,15 +7,22 @@ public class Coin : MonoBehaviour
     public Tower currentTower;
 
     private Camera _mainCamera;
+
+    private int OwnerId;
     
     // C# Event: Raised when this coin is clicked
     public event Action<Tower> OnCoinClicked;
 
 
-    void Start()
+    private void Start()
     {
         _mainCamera = Camera.main;
         Debug.Log($"Coin {gameObject.name} initialized.");
+    }
+
+    public void SetOwner(int ownerId)
+    {
+        OwnerId = ownerId;
     }
 
     void Update()
@@ -39,11 +46,14 @@ public class Coin : MonoBehaviour
             if (hit.collider.gameObject == gameObject)
             {
                 Debug.Log($"✅ Coin {gameObject.name} clicked!");
-
+                if (OwnerId != GameManager.Instance.CurrentPlayer)
+                {
+                    return;
+                }
                 if (currentTower != null)
                 {
                     var diceValues = GameManager.Instance.GetDiceValues();
-                    OnCoinClicked.Invoke(currentTower);
+                    OnCoinClicked?.Invoke(currentTower);
                     Debug.Log($"Coin {gameObject.name} is currently on Tower: {currentTower.name}");
                 }
                 else

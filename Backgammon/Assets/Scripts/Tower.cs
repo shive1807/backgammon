@@ -16,7 +16,9 @@ public class Tower : MonoBehaviour
 
     // ID of the player who currently owns this tower (-1 means unoccupied)
     private int OwnerPlayerId { get; set; } = -1;
-
+    
+    public int GetOwnerPlayerId() => OwnerPlayerId;
+    
     // Offset applied for each additional checker (for stacking visuals)
     private const float CheckerOffsetY = 0.2f;
 
@@ -51,7 +53,7 @@ public class Tower : MonoBehaviour
         }
         
         checker.GetComponent<Coin>().SetCurrentTower(this);
-        
+        checker.GetComponent<Coin>().SetOwner(playerId);
         // Add to the checker stack
         Checkers.Push(checker);
 
@@ -76,8 +78,8 @@ public class Tower : MonoBehaviour
         // Disallow placing opponent's checker if already owned
         else if (OwnerPlayerId != playerId)
         {
-            Debug.LogWarning("Attempted to add opponent's checker to this tower.");
-            return;
+            // Debug.LogWarning("Attempted to add opponent's checker to this tower.");
+            // return;
         }
         
         ring.GetComponent<Ring>().SetCurrentTower(this);

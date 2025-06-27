@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class GameBoard : MonoBehaviour
@@ -96,6 +97,8 @@ public class GameBoard : MonoBehaviour
         _rings.Clear();
         
         var diceValues = GameManager.Instance.GetDiceValues();
+        var runOnce    = diceValues.Distinct().Count() != diceValues.Count();
+
         foreach (var diceValue in diceValues)
         {
             var ring = Instantiate(ringPrefab);
@@ -119,6 +122,8 @@ public class GameBoard : MonoBehaviour
             
             towers[targetTowerIndex].AddRing(ring, 0);
             _rings.Add(ring);
+
+            if (runOnce) return;
         }
     }
 }
