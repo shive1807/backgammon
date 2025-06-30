@@ -5,6 +5,7 @@ using UnityEngine;
 /// </summary>
 public class Coin : MonoBehaviour
 {
+    private int _prevTower;
     private int _currentTower; // ID or index of the tower this coin is currently on
     private int _ownerId;      // ID of the player who owns this coin
 
@@ -15,6 +16,7 @@ public class Coin : MonoBehaviour
     /// <param name="tower">The ID or index of the tower this coin is on.</param>
     public void SetCoin(int ownerId, int tower)
     {
+        _prevTower = -1;
         _ownerId = ownerId;
         _currentTower = tower;
     }
@@ -56,5 +58,14 @@ public class Coin : MonoBehaviour
         // Publish an event to the message bus indicating this coin was clicked
         MessageBus.Instance.Publish(new CoreGameMessage.CoinClicked(_currentTower));
         Debug.Log($"Coin {gameObject.name} is currently on Tower: {_currentTower}");
+    }
+
+    /// <summary>
+    /// Updates the coin current tower.
+    /// </summary>
+    public void UpdateCoinTower(int targetTower)
+    {
+        _prevTower = _currentTower;
+        _currentTower = targetTower;
     }
 }
