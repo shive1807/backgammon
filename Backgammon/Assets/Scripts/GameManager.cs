@@ -17,23 +17,15 @@ public class GameManager : MonoBehaviour
 
     public GameState currentState = GameState.Idle;
 
-    public Dice dice1;  // Reference to your Dice component
-    public Dice dice2;
-    public Coin selectedCoin; // The coin selected for movement
-    public List<Coin> player1Coins;
-    public List<Coin> player2Coins;
-    public Ring Ring;
+    private List<int> _diceValues;
+    private int _currentPlayer = 0;
 
-    private int[] diceValues;
-    private int currentPlayer = 0;
-    
-
-    void Awake()
+    private void Awake()
     {
         Instance = this;
     }
 
-    void Start()
+    private void Start()
     {
         TransitionToState(GameState.Setup);
     }
@@ -49,8 +41,8 @@ public class GameManager : MonoBehaviour
                 // Could auto-roll or wait for player to tap
                 if (Input.GetKeyDown(KeyCode.Space)) // Replace with button tap
                 {
-                    diceValues = CanvasManager.Instance.ShuffleDiceAndReturnValues(currentPlayer);
-                    Debug.Log($"Player {currentPlayer} rolled: {diceValues[0]} and {diceValues[1]}");
+                    _diceValues = CanvasManager.Instance.ShuffleDiceAndReturnValues(_currentPlayer);
+                    Debug.Log($"Player {_currentPlayer} rolled: {_diceValues[0]} and {_diceValues[1]}");
                     TransitionToState(GameState.PlayerMove);
                 }
                 break;
@@ -60,8 +52,8 @@ public class GameManager : MonoBehaviour
                 break;
 
             case GameState.SwitchTurn:
-                currentPlayer++; // Toggle 1 <-> 2
-                currentPlayer %= 2;
+                _currentPlayer++; // Toggle 1 <-> 2
+                _currentPlayer %= 2;
                 TransitionToState(GameState.RollDice);
                 break;
 
@@ -104,7 +96,7 @@ public class GameManager : MonoBehaviour
 
     void AllowPlayerToMove()
     {
-        Debug.Log($"Player {currentPlayer} can now move using dice {diceValues[0]} and {diceValues[1]}");
+        Debug.Log($"Player {_currentPlayer} can now move using dice {_diceValues[0]} and {_diceValues[1]}");
         // Wait for coin interaction through Coin.cs
     }
 
@@ -116,13 +108,19 @@ public class GameManager : MonoBehaviour
 
     public bool IsPlayerTurn(int playerId)
     {
-        return playerId == currentPlayer;
+        return playerId == _currentPlayer;
     }
 
-    public int[] GetDiceValues()
+    public List<int> GetDiceValues()
     {
-        return diceValues;
+        return _diceValues;
     }
 
-    public int CurrentPlayer => currentPlayer;
+    public List<int> RemovePlayedValuesFromDice(int playedValue)
+    {
+        _diceValues.Remove(playedValue);
+        return _diceValues;
+    }
+
+    public int CurrentPlayer => _currentPlayer;
 }

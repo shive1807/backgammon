@@ -1,21 +1,15 @@
-using System;
 using UnityEngine;
-using System.Collections.Generic;
-
-using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public class GameBoard : MonoBehaviour
 {
-    public List<Tower> towers = new List<Tower>(); // 24 towers on the board
-
-    public Transform whiteTowerStack; // For storing unused white coins
-    public Transform blackTowerStack; // For storing unused black coins
-
+    public List<Tower> towers = new (); // 24 towers on the board
     public GameObject coinPrefab; // Prefab for checker coins
     public GameObject ringPrefab;
-    private List<GameObject> _rings = new List<GameObject>();
+    private List<GameObject> _rings = new ();
+    private Stack<Coin> currentTurnCoins = new();
 
     private void Start()
     {
@@ -34,15 +28,7 @@ public class GameBoard : MonoBehaviour
         AddWhiteCoins();
         AddBlackCoins();
     }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            
-        }
-    }
-
+    
     private void AddWhiteCoins()
     {
         AddCoinsToTower(23, 2, 0); // Tower 24 (index 23)
@@ -67,10 +53,10 @@ public class GameBoard : MonoBehaviour
     /// <param name="playerId">0 = White, 1 = Black</param>
     private void AddCoinsToTower(int towerIndex, int count, int playerId)
     {
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             var coin = Instantiate(coinPrefab);
-            coin.GetComponent<Coin>().OnCoinClicked += OnCoinClicked;
+            //coin.GetComponent<Coin>().OnCoinClicked += OnCoinClicked;
             
             if (playerId == 0)
             {
@@ -90,19 +76,15 @@ public class GameBoard : MonoBehaviour
 
     private void OnCoinClicked(Tower tower)
     {
-        foreach (var rings in _rings)
-        {
-            Destroy(rings);
-        }
-        _rings.Clear();
+        ClearRings();
         
         var diceValues = GameManager.Instance.GetDiceValues();
-        var runOnce    = diceValues.Distinct().Count() != diceValues.Count();
+        var runOnce       = diceValues.Distinct().Count() != diceValues.Count();
 
         foreach (var diceValue in diceValues)
         {
             var ring = Instantiate(ringPrefab);
-
+            ring.GetComponent<Ring>().OnRingClicked += MoveChecker;
             var towerIndex = tower.TowerIndex;
             var targetTowerIndex = towerIndex;
             if (GameManager.Instance.CurrentPlayer == 0)
@@ -120,10 +102,28 @@ public class GameBoard : MonoBehaviour
                 continue;
             }
             
-            towers[targetTowerIndex].AddRing(ring, 0);
+            towers[targetTowerIndex].AddRing(ring, 0, tower);
             _rings.Add(ring);
 
             if (runOnce) return;
         }
+    }
+
+    private void ClearRings()
+    {
+        foreach (var rings in _rings)
+        {
+            Destroy(rings);
+        }
+        _rings.Clear();
+    }
+
+    //remove from the current tower and move the coin to the new target tower.
+    private void MoveChecker(Tower sourceTowerIndex, Tower targetTowerIndex)
+    {
+        var topChecker = sourceTowerIndex.RemoveTopChecker();
+        //topChecker.GetComponent<Coin>().MoveToTower(targetTowerIndex);
+        ClearRings();
+        GameManager.Instance.RemovePlayedValuesFromDice(Mathf.Abs(sourceTowerIndex.TowerIndex - targetTowerIndex.TowerIndex));
     }
 }

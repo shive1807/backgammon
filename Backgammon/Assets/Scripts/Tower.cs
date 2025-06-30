@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -21,6 +22,21 @@ public class Tower : MonoBehaviour
     
     // Offset applied for each additional checker (for stacking visuals)
     private const float CheckerOffsetY = 0.2f;
+
+    private void OnEnable()
+    {
+        MessageBus.Instance.Subscribe<CoreGameMessage.CoinClicked>(OnCoinClicked);
+    }
+
+    private void OnDisable()
+    {
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.CoinClicked>(OnCoinClicked);
+    }
+
+    private void OnCoinClicked(CoreGameMessage.CoinClicked message)
+    {
+        var coinClicked = message.Coin;
+    }
 
     /// <summary>
     /// Sets the tower's index (usually done at initialization time).
@@ -52,8 +68,7 @@ public class Tower : MonoBehaviour
             return;
         }
         
-        checker.GetComponent<Coin>().SetCurrentTower(this);
-        checker.GetComponent<Coin>().SetOwner(playerId);
+        checker.GetComponent<Coin>().SetCoin(OwnerPlayerId, TowerIndex);
         // Add to the checker stack
         Checkers.Push(checker);
 
@@ -68,7 +83,7 @@ public class Tower : MonoBehaviour
         checker.transform.position = newPos;
     }
     
-    public void AddRing(GameObject ring, int playerId)
+    public void AddRing(GameObject ring, int playerId, Tower sourceTower)
     {
         // If the tower is empty, assign ownership
         if (Checkers.Count == 0)
@@ -82,7 +97,7 @@ public class Tower : MonoBehaviour
             // return;
         }
         
-        ring.GetComponent<Ring>().SetCurrentTower(this);
+        ring.GetComponent<Ring>().SetCurrentTower(this, sourceTower);
         
         // Add to the checker stack
         Rings.Push(ring);

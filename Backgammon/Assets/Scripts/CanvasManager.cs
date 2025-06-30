@@ -50,15 +50,15 @@ public class CanvasManager : MonoBehaviour
         }
     }
 
-    public int[] ShuffleDiceAndReturnValues(int turnIndex)
+    public List<int> ShuffleDiceAndReturnValues(int turnIndex)
     {
         if (turnIndex == 0)
         {
-            return new []{p1Dice[0].Roll(), p1Dice[1].Roll()};
+            return new List<int>() { p1Dice[0].Roll(), p1Dice[1].Roll() };
         }
         else
         {
-            return new []{p2Dice[0].Roll(), p2Dice[1].Roll()};
+            return new List<int>() { p2Dice[0].Roll(), p2Dice[1].Roll() };
         }
     }
 }

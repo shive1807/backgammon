@@ -1,89 +1,60 @@
-using System;
 using UnityEngine;
 
+/// <summary>
+/// Represents a Coin in the game that can be clicked by the player.
+/// </summary>
 public class Coin : MonoBehaviour
 {
-    // Reference to the tower this coin is currently placed on
-    public Tower currentTower;
+    private int _currentTower; // ID or index of the tower this coin is currently on
+    private int _ownerId;      // ID of the player who owns this coin
 
-    private Camera _mainCamera;
-
-    private int OwnerId;
-    
-    // C# Event: Raised when this coin is clicked
-    public event Action<Tower> OnCoinClicked;
-
-
-    private void Start()
+    /// <summary>
+    /// Initializes the coin with an owner and tower.
+    /// </summary>
+    /// <param name="ownerId">The player ID who owns this coin.</param>
+    /// <param name="tower">The ID or index of the tower this coin is on.</param>
+    public void SetCoin(int ownerId, int tower)
     {
-        _mainCamera = Camera.main;
-        Debug.Log($"Coin {gameObject.name} initialized.");
+        _ownerId = ownerId;
+        _currentTower = tower;
     }
 
-    public void SetOwner(int ownerId)
+    private void Update()
     {
-        OwnerId = ownerId;
-    }
-
-    void Update()
-    {
-        // Handle touch or mouse click
+        // Handle mouse/touch input on left click or tap
         if (Input.GetMouseButtonDown(0))
         {
             HandleTouchOrClick();
         }
     }
 
-    void HandleTouchOrClick()
+    /// <summary>
+    /// Detects if the coin was clicked or tapped and handles interaction logic.
+    /// </summary>
+    private void HandleTouchOrClick()
     {
-        Vector2 worldPoint = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
+        if (Camera.main == null)
+        {
+            Debug.LogWarning("No main camera found in the scene.");
+            return;
+        }
+
+        // Convert mouse position to world point and raycast at that position
+        Vector2 worldPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         RaycastHit2D hit = Physics2D.Raycast(worldPoint, Vector2.zero);
 
-        if (hit.collider != null)
-        {
-            Debug.Log("2D Ray hit: " + hit.collider.gameObject.name);
+        // If nothing is hit or it's not this coin, ignore
+        if (hit.collider == null || hit.collider.gameObject != gameObject)
+            return;
 
-            if (hit.collider.gameObject == gameObject)
-            {
-                Debug.Log($"✅ Coin {gameObject.name} clicked!");
-                if (OwnerId != GameManager.Instance.CurrentPlayer)
-                {
-                    return;
-                }
-                if (currentTower != null)
-                {
-                    var diceValues = GameManager.Instance.GetDiceValues();
-                    OnCoinClicked?.Invoke(currentTower);
-                    Debug.Log($"Coin {gameObject.name} is currently on Tower: {currentTower.name}");
-                }
-                else
-                {
-                    Debug.Log($"Coin {gameObject.name} is not on any tower.");
-                }
-            }
-            else
-            {
-                Debug.Log("Hit something else, not this coin.");
-            }
-        }
-        else
-        {
-            Debug.Log("Raycast2D missed.");
-        }
-    }
+        Debug.Log($"✅ Coin {gameObject.name} clicked!");
 
+        // Ensure only the owner can interact with the coin
+        if (_ownerId != GameManager.Instance.CurrentPlayer)
+            return;
 
-    // Call this method when the coin is placed on a tower
-    public void SetCurrentTower(Tower tower)
-    {
-        currentTower = tower;
-        Debug.Log($"Coin {gameObject.name} placed on Tower: {tower.name}");
-    }
-    
-    // Optional: to clear tower info when removed
-    public void ClearTower()
-    {
-        Debug.Log($"Coin {gameObject.name} removed from Tower: {currentTower?.name}");
-        currentTower = null;
+        // Publish an event to the message bus indicating this coin was clicked
+        MessageBus.Instance.Publish(new CoreGameMessage.CoinClicked(_currentTower));
+        Debug.Log($"Coin {gameObject.name} is currently on Tower: {_currentTower}");
     }
 }
