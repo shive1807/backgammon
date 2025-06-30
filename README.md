@@ -1,4 +1,3 @@
-Here's a **beautiful, professional, and eye-catching `README.md`** for your Backgammon game made in Unity. It includes emojis, GIF/image placeholders, setup instructions, gameplay features, and contribution guidelines—perfect for your GitHub profile:
 
 ---
 
