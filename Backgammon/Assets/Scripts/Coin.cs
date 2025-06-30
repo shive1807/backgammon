@@ -1,5 +1,10 @@
-using System;
 using UnityEngine;
+
+public enum CoinType
+{
+    White,
+    Black
+}
 
 /// <summary>
 /// Represents a Coin in the game that can be clicked by the player.
@@ -10,6 +15,7 @@ public class Coin : MonoBehaviour
     private int _currentTower; // ID or index of the tower this coin is currently on
     private int _ownerId;      // ID of the player who owns this coin
     private bool _isMovedInCurrentTurn;
+    private CoinType _type;
     
     [SerializeField]
     private SpriteRenderer highlightRenderer;
@@ -35,6 +41,7 @@ public class Coin : MonoBehaviour
         _ownerId      = ownerId;
         _currentTower = tower;
         highlightRenderer.gameObject.SetActive(false);
+        _type = ownerId == 0 ? CoinType.White : CoinType.Black;
     }
 
     private void Update()
@@ -88,6 +95,8 @@ public class Coin : MonoBehaviour
     
     public int GetPrevTower() => _prevTower;
     public int GetCurrentTower() => _currentTower;
+    
+    public int GetOwnerId() => _ownerId;
     
     public bool GetIsMovedInCurrentTurn() => _isMovedInCurrentTurn;
     

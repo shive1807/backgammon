@@ -1,7 +1,13 @@
-using System;
 using UnityEngine;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
+
+public enum TowerType
+{
+    White,
+    Black,
+    Empty
+}
 
 /// <summary>
 /// Represents a single tower (point) on the Backgammon board.
@@ -11,6 +17,8 @@ public class Tower : MonoBehaviour
 {
     // The index of this tower on the board (0 to 23)
     public int TowerIndex { get; private set; }
+    
+    public TowerType TowerType { get; private set; }
 
     // Stack to hold the checkers currently on this tower
     private Stack<Coin> Coins { get; set; } = new Stack<Coin>();
@@ -87,6 +95,11 @@ public class Tower : MonoBehaviour
 
     public void AddCoin(Coin coin)
     {
+        if (coin.GetOwnerId() != OwnerPlayerId)
+        {
+            
+        }
+        
         Coins.Push(coin);
         var direction = TowerIndex <= 11 ? Vector3.up : Vector3.down;
         var newPos = transform.position + direction * CheckerOffsetY * (Coins.Count - 1);
@@ -105,11 +118,6 @@ public class Tower : MonoBehaviour
 
     public int GetListOfMovedCoins() => Coins.Count(coin => coin.GetIsMovedInCurrentTurn());
 
-    public Coin RemoveCoin(Coin coin)
-    {
-        return Coins.Pop();
-    }
-
     public void HighlightTopCoin()
     {
         var coin = Coins.Peek();
@@ -126,19 +134,10 @@ public class Tower : MonoBehaviour
         {
             OwnerPlayerId = playerId;
         }
-        // Disallow placing opponent's checker if already owned
-        else if (OwnerPlayerId != playerId)
-        {
-            // Debug.LogWarning("Attempted to add opponent's checker to this tower.");
-            //return;
-        }
-
-        // r.SetCurrentTower(this);
         
-        // Add to the checker stack
+        // Add to the ring stack
         Rings.Push(ring);
-        ring.SetCurrentTower(sourceTowerIndex, currentTowerIndex, OwnerPlayerId == playerId);
-        // Make it a child of this tower for scene hierarchy organization
+        ring.SetCurrentTower(sourceTowerIndex, currentTowerIndex, OwnerPlayerId == playerId || CanAttack());
 
         // Determine a stacking direction based on index
         var direction = TowerIndex <= 11 ? Vector3.up : Vector3.down;
@@ -168,7 +167,7 @@ public class Tower : MonoBehaviour
         if (Coins.Count == 0)
             return null;
 
-        Coin topChecker = Coins.Pop();
+        var topChecker = Coins.Pop();
 
         // Reset ownership if the tower is now empty
         if (Coins.Count == 0)
@@ -194,18 +193,9 @@ public class Tower : MonoBehaviour
     /// Checks whether the tower is empty.
     /// </summary>
     public bool IsEmpty() => Coins.Count == 0;
-
+    
     /// <summary>
-    /// Clears all checkers from the tower (used during reset).
+    /// Checks whether the tower is available to Attack.
     /// </summary>
-    public void ClearTower()
-    {
-        foreach (var checker in Coins)
-        {
-            Destroy(checker); // Remove from scene
-        }
-
-        Coins.Clear();
-        OwnerPlayerId = -1;
-    }
+    public bool CanAttack() => Coins.Count == 1;
 }

@@ -177,7 +177,6 @@ public class GameBoard : MonoBehaviour
         _diceValuesUsed.Add(message.CheckerMovedByDiceValue);
     }
 
-
     //remove from the current tower and move the coin to the new target tower.
     private void OnRingClicked(CoreGameMessage.RingClicked message)
     {
