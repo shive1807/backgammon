@@ -91,7 +91,7 @@ If you have suggestions, ideas, or bugs, feel free to [open an issue](https://gi
 
 ## 🧑‍💻 Author
 
-Made with ❤️ by [Shivam Bhati](https://github.com/shivambhati)
+Made with ❤️ by [Shivam Bhati](https://github.com/shive1807)
 🎓 IIT Roorkee | 🎮 Game Dev | 🛠️ Unity & Unreal | ✨ Hyper-Casual, Real Money, Multiplayer
 
 ---
