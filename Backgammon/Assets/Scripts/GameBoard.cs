@@ -12,6 +12,8 @@ public class GameBoard : MonoBehaviour
     private int _currentTurn;
     
     private List<int> _diceValues;
+
+    private List<int> _diceValuesUsed;
     
     private void OnGameSetup(CoreGameMessage.GameSetup message)
     {
@@ -35,7 +37,7 @@ public class GameBoard : MonoBehaviour
         MessageBus.Instance.Subscribe<CoreGameMessage.DiceRolled>(OnDiceShuffled);
         MessageBus.Instance.Subscribe<CoreGameMessage.CoinClicked>(OnCoinClicked);
         MessageBus.Instance.Subscribe<CoreGameMessage.RingClicked>(OnRingClicked);
-        MessageBus.Instance.Subscribe<CoreGameMessage.OnCheckerMoved>(OnCheckerMoved);
+        MessageBus.Instance.Subscribe<CoreGameMessage.OnCoinMoved>(OnCheckerMoved);
         MessageBus.Instance.Subscribe<CoreGameMessage.OnResetPressed>(OnResetPressed);
     }
 
@@ -46,7 +48,7 @@ public class GameBoard : MonoBehaviour
         MessageBus.Instance.Unsubscribe<CoreGameMessage.DiceRolled>(OnDiceShuffled);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.CoinClicked>(OnCoinClicked);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.RingClicked>(OnRingClicked);
-        MessageBus.Instance.Unsubscribe<CoreGameMessage.OnCheckerMoved>(OnCheckerMoved);
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.OnCoinMoved>(OnCheckerMoved);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.OnResetPressed>(OnResetPressed);
     }
 
@@ -164,9 +166,10 @@ public class GameBoard : MonoBehaviour
         }
     }
     
-    private void OnCheckerMoved(CoreGameMessage.OnCheckerMoved message)
+    private void OnCheckerMoved(CoreGameMessage.OnCoinMoved message)
     {
         _diceValues.Remove(message.CheckerMovedByDiceValue);
+        _diceValuesUsed.Add(message.CheckerMovedByDiceValue);
     }
 
 
@@ -176,6 +179,6 @@ public class GameBoard : MonoBehaviour
         var topChecker = towers[message.SourceTowerIndex].RemoveTopChecker();
         towers[message.CurrentTowerIndex].AddChecker(topChecker);
         MessageBus.Instance.Publish(new CoreGameMessage.CleanTowerRings());
-        MessageBus.Instance.Publish(new CoreGameMessage.OnCheckerMoved(Mathf.Abs(message.SourceTowerIndex - message.CurrentTowerIndex)));
+        MessageBus.Instance.Publish(new CoreGameMessage.OnCoinMoved(Mathf.Abs(message.SourceTowerIndex - message.CurrentTowerIndex)));
     }
 }

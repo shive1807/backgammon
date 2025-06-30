@@ -15,12 +15,12 @@ public class Coin : MonoBehaviour
 
     private void OnEnable()
     {
-        MessageBus.Instance.Subscribe<CoreGameMessage.OnCheckerMoved>(OnCheckerMoved);
+        MessageBus.Instance.Subscribe<CoreGameMessage.OnCoinMoved>(OnCheckerMoved);
     }
 
     private void OnDisable()
     {
-        MessageBus.Instance.Unsubscribe<CoreGameMessage.OnCheckerMoved>(OnCheckerMoved);
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.OnCoinMoved>(OnCheckerMoved);
     }
 
     /// <summary>
@@ -89,7 +89,7 @@ public class Coin : MonoBehaviour
         highlightRenderer.gameObject.SetActive(show);
     }
 
-    private void OnCheckerMoved(CoreGameMessage.OnCheckerMoved message)
+    private void OnCheckerMoved(CoreGameMessage.OnCoinMoved message)
     {
         Highlight(false);
     }

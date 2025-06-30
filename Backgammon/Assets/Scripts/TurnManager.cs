@@ -1,9 +1,7 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 public class TurnManager : MonoBehaviour
 {
-    private List<int> _usedStack;
     public int GetCurrentTurn { get; private set; }
 
     private void OnEnable()

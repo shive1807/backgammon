@@ -27,11 +27,11 @@ public class CoreGameMessage
         }
     }
 
-    public class OnCheckerMoved : IMessage
+    public class OnCoinMoved : IMessage
     {
         public readonly int CheckerMovedByDiceValue;
 
-        public OnCheckerMoved(int checkerMovedByDiceValue)
+        public OnCoinMoved(int checkerMovedByDiceValue)
         {
             CheckerMovedByDiceValue = checkerMovedByDiceValue;
         }
