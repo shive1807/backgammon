@@ -11,13 +11,13 @@ public class DiceManager : MonoBehaviour
     private void OnEnable()
     {
         MessageBus.Instance.Subscribe<CoreGameMessage.GameSetup>(OnGameSetup);
-        MessageBus.Instance.Subscribe<CoreGameMessage.TurnStartDice>(OnTurnStartDice);
+        MessageBus.Instance.Subscribe<CoreGameMessage.TurnStartDiceRolled>(OnTurnStartDice);
     }
 
     private void OnDisable()
     {
         MessageBus.Instance.Unsubscribe<CoreGameMessage.GameSetup>(OnGameSetup);
-        MessageBus.Instance.Unsubscribe<CoreGameMessage.TurnStartDice>(OnTurnStartDice);
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.TurnStartDiceRolled>(OnTurnStartDice);
     }
 
     private void OnGameSetup(CoreGameMessage.GameSetup message)
@@ -34,7 +34,7 @@ public class DiceManager : MonoBehaviour
         }
     }
 
-    private void OnTurnStartDice(CoreGameMessage.TurnStartDice message)
+    private void OnTurnStartDice(CoreGameMessage.TurnStartDiceRolled message)
     {
         DisableAllDice();
         

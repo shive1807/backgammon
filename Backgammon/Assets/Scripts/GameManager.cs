@@ -112,7 +112,7 @@ public class GameManager : MonoBehaviour
                 break;
 
             case GameState.RollDice:
-                MessageBus.Instance.Publish(new CoreGameMessage.TurnStartDice(_turnManager.GetCurrentTurn));
+                MessageBus.Instance.Publish(new CoreGameMessage.TurnStartDiceRolled(_turnManager.GetCurrentTurn));
                 break;
 
             case GameState.PlayerMove:

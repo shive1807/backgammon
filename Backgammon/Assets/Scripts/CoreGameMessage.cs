@@ -62,11 +62,11 @@ public class CoreGameMessage
         
     }
 
-    public class TurnStartDice : IMessage
+    public class TurnStartDiceRolled : IMessage
     {
         public readonly int PlayerIndex;
 
-        public TurnStartDice(int playerIndex)
+        public TurnStartDiceRolled(int playerIndex)
         {
             PlayerIndex = playerIndex;
         }

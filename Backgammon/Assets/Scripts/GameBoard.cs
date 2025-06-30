@@ -31,21 +31,23 @@ public class GameBoard : MonoBehaviour
     private void OnEnable()
     {
         MessageBus.Instance.Subscribe<CoreGameMessage.GameSetup>(OnGameSetup);
-        MessageBus.Instance.Subscribe<CoreGameMessage.TurnStartDice>(OnTurnStartDice);
+        MessageBus.Instance.Subscribe<CoreGameMessage.TurnStartDiceRolled>(OnTurnStartDice);
         MessageBus.Instance.Subscribe<CoreGameMessage.DiceShuffled>(OnDiceShuffled);
         MessageBus.Instance.Subscribe<CoreGameMessage.CoinClicked>(OnCoinClicked);
         MessageBus.Instance.Subscribe<CoreGameMessage.RingClicked>(OnRingClicked);
         MessageBus.Instance.Subscribe<CoreGameMessage.OnCheckerMoved>(OnCheckerMoved);
+        MessageBus.Instance.Subscribe<CoreGameMessage.OnResetPressed>(OnResetPressed);
     }
 
     private void OnDisable()
     {
         MessageBus.Instance.Unsubscribe<CoreGameMessage.GameSetup>(OnGameSetup);
-        MessageBus.Instance.Unsubscribe<CoreGameMessage.TurnStartDice>(OnTurnStartDice);
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.TurnStartDiceRolled>(OnTurnStartDice);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.DiceShuffled>(OnDiceShuffled);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.CoinClicked>(OnCoinClicked);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.RingClicked>(OnRingClicked);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.OnCheckerMoved>(OnCheckerMoved);
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.OnResetPressed>(OnResetPressed);
     }
 
     private void AddWhiteCoins()
@@ -90,6 +92,11 @@ public class GameBoard : MonoBehaviour
         MessageBus.Instance.Publish(new CoreGameMessage.SwitchTurn());
     }
 
+    private void OnResetPressed(CoreGameMessage.OnResetPressed message)
+    {
+        
+    }
+
     private int GetAvailableActions(List<int> diceValues)
     {
         _availableActions = 0;
@@ -124,7 +131,7 @@ public class GameBoard : MonoBehaviour
     }
 
 
-    private void OnTurnStartDice(CoreGameMessage.TurnStartDice message)
+    private void OnTurnStartDice(CoreGameMessage.TurnStartDiceRolled message)
     {
         _currentTurn = message.PlayerIndex;
     }
