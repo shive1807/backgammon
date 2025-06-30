@@ -77,4 +77,14 @@ public class CoreGameMessage
             
         }
     }
+
+    public class OnDonePressed
+    {
+        
+    }
+
+    public class OnResetPressed
+    {
+        
+    }
 }

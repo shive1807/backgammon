@@ -4,7 +4,9 @@ using System.Collections.Generic;
 public class DiceManager : MonoBehaviour
 {
     private readonly List<Dice> _diceList = new ();
-    private int _dicesOwner = -1;
+    
+    [SerializeField, Tooltip("ID of the player who owns these dice. Use -1 for unassigned.")]
+    private int dicesOwner = -1;
 
     private void OnEnable()
     {
@@ -16,11 +18,6 @@ public class DiceManager : MonoBehaviour
     {
         MessageBus.Instance.Unsubscribe<CoreGameMessage.GameSetup>(OnGameSetup);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.TurnStartDice>(OnTurnStartDice);
-    }
-
-    public void SetOwner(int owner)
-    {
-        _dicesOwner = owner;
     }
 
     private void OnGameSetup(CoreGameMessage.GameSetup message)
@@ -41,7 +38,7 @@ public class DiceManager : MonoBehaviour
     {
         DisableAllDice();
         
-        if (message.PlayerIndex == _dicesOwner)
+        if (message.PlayerIndex == dicesOwner)
         {
             ShowDice();
         }
