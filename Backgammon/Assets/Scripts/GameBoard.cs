@@ -1,6 +1,6 @@
-using System.Collections;
 using UnityEngine;
 using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 
 public class GameBoard : MonoBehaviour
@@ -10,6 +10,8 @@ public class GameBoard : MonoBehaviour
     private int _availableActions;
 
     private int _currentTurn;
+    
+    private List<int> _diceValues;
     
     private void OnGameSetup(CoreGameMessage.GameSetup message)
     {
@@ -22,10 +24,6 @@ public class GameBoard : MonoBehaviour
             i++;
         }
         
-        // Optionally clear board before adding coins
-        //foreach (var tower in towers)
-            //tower.ClearTower();
-
         AddWhiteCoins();
         AddBlackCoins();
     }
@@ -37,6 +35,7 @@ public class GameBoard : MonoBehaviour
         MessageBus.Instance.Subscribe<CoreGameMessage.DiceShuffled>(OnDiceShuffled);
         MessageBus.Instance.Subscribe<CoreGameMessage.CoinClicked>(OnCoinClicked);
         MessageBus.Instance.Subscribe<CoreGameMessage.RingClicked>(OnRingClicked);
+        MessageBus.Instance.Subscribe<CoreGameMessage.OnCheckerMoved>(OnCheckerMoved);
     }
 
     private void OnDisable()
@@ -46,6 +45,7 @@ public class GameBoard : MonoBehaviour
         MessageBus.Instance.Unsubscribe<CoreGameMessage.DiceShuffled>(OnDiceShuffled);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.CoinClicked>(OnCoinClicked);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.RingClicked>(OnRingClicked);
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.OnCheckerMoved>(OnCheckerMoved);
     }
 
     private void AddWhiteCoins()
@@ -72,8 +72,6 @@ public class GameBoard : MonoBehaviour
     /// <param name="playerId">0 = White, 1 = Black</param>
     private void AddCoinsToTower(int towerIndex, int count, int playerId)
     {
-        CleanTowers();
-        
         for (var i = 0; i < count; i++)
         {
             Debug.Log($"Adding coins to tower {towerIndex} with player {playerId}");
@@ -81,24 +79,9 @@ public class GameBoard : MonoBehaviour
         }
     }
 
-    private void CleanTowers()
-    {
-        foreach (var tower in towers)
-        {
-            //tower.ClearTower();
-        }
-    }
-
     private void OnDiceShuffled(CoreGameMessage.DiceShuffled message)
     {
-        if (GetAvailableActions(message.Dice) > 0)
-        {
-            //let user play.
-        }
-        else
-        {
-            StartCoroutine(DelaySwitchTurn());
-        }
+        _diceValues = message.Dice;
     }
 
     private static IEnumerator DelaySwitchTurn()
@@ -117,7 +100,7 @@ public class GameBoard : MonoBehaviour
             {
                 foreach (var diceValue in diceValues)
                 {
-                    int targetValue = tower.TowerIndex;
+                    var targetValue = tower.TowerIndex;
 
                     if (_currentTurn == 0)
                     {
@@ -131,13 +114,15 @@ public class GameBoard : MonoBehaviour
                     {
                         continue;
                     }
-
+                    
+                    tower.HighlightTopCoin();
                     _availableActions++;
                 }
             }
         }
         return _availableActions;
     }
+
 
     private void OnTurnStartDice(CoreGameMessage.TurnStartDice message)
     {
@@ -170,6 +155,12 @@ public class GameBoard : MonoBehaviour
             if (runOnce) return;
         }
     }
+    
+    private void OnCheckerMoved(CoreGameMessage.OnCheckerMoved message)
+    {
+        _diceValues.Remove(message.CheckerMovedByDiceValue);
+    }
+
 
     //remove from the current tower and move the coin to the new target tower.
     private void OnRingClicked(CoreGameMessage.RingClicked message)

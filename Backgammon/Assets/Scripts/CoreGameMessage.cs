@@ -36,6 +36,18 @@ public class CoreGameMessage
             CheckerMovedByDiceValue = checkerMovedByDiceValue;
         }
     }
+
+    public class PlayTurn : IMessage
+    {
+        public readonly int PlayerId;
+        public List<int> AvailableMoves;
+
+        public PlayTurn(int playerId, List<int> availableMoves)
+        {
+            PlayerId = playerId;
+            AvailableMoves = availableMoves;
+        }
+    }
     
     public class CleanTowerRings : IMessage
     {
@@ -63,10 +75,11 @@ public class CoreGameMessage
     public class DiceShuffled : IMessage
     {
         public readonly List<int> Dice;
-
-        public DiceShuffled(List<int> diceVales)
+        public readonly int CurrentPlayerIndex;
+        public DiceShuffled(List<int> diceVales, int currentPlayerIndex)
         {
             Dice = diceVales;
+            CurrentPlayerIndex = currentPlayerIndex;
         }
     }
 

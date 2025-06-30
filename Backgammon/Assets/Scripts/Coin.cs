@@ -9,6 +9,19 @@ public class Coin : MonoBehaviour
     private int _prevTower;
     private int _currentTower; // ID or index of the tower this coin is currently on
     private int _ownerId;      // ID of the player who owns this coin
+    
+    [SerializeField]
+    private SpriteRenderer highlightRenderer;
+
+    private void OnEnable()
+    {
+        MessageBus.Instance.Subscribe<CoreGameMessage.OnCheckerMoved>(OnCheckerMoved);
+    }
+
+    private void OnDisable()
+    {
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.OnCheckerMoved>(OnCheckerMoved);
+    }
 
     /// <summary>
     /// Initializes the coin with an owner and tower.
@@ -17,9 +30,10 @@ public class Coin : MonoBehaviour
     /// <param name="tower">The ID or index of the tower this coin is on.</param>
     public void SetCoin(int ownerId, int tower)
     {
-        _prevTower = -1;
-        _ownerId = ownerId;
+        _prevTower    = -1;
+        _ownerId      = ownerId;
         _currentTower = tower;
+        highlightRenderer.gameObject.SetActive(false);
     }
 
     private void Update()
@@ -70,8 +84,13 @@ public class Coin : MonoBehaviour
         _currentTower = targetTower;
     }
 
-    private void OnDisable()
+    public void Highlight(bool show = true)
     {
-        Debug.Log("Getting Disabled");
+        highlightRenderer.gameObject.SetActive(show);
+    }
+
+    private void OnCheckerMoved(CoreGameMessage.OnCheckerMoved message)
+    {
+        Highlight(false);
     }
 }

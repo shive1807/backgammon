@@ -92,6 +92,12 @@ public class Tower : MonoBehaviour
         var newPos = transform.position + direction * CheckerOffsetY * (Checkers.Count - 1);
         coin.gameObject.transform.position = newPos;
     }
+
+    public void HighlightTopCoin()
+    {
+        var coin = Checkers.Peek();
+        coin.Highlight();
+    }
     
     public void AddRing(int playerId, int sourceTowerIndex, int currentTowerIndex)
     {
