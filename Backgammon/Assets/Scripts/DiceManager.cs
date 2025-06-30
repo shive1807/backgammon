@@ -64,6 +64,6 @@ public class DiceManager : MonoBehaviour
     
     private void ShuffleDiceAndReturnValues()
     {
-        MessageBus.Instance.Publish(new CoreGameMessage.DiceShuffled(new List<int>() { _diceList[0].Roll(), _diceList[1].Roll()}, dicesOwner));
+        MessageBus.Instance.Publish(new CoreGameMessage.DiceRolled(new List<int>() { _diceList[0].Roll(), _diceList[1].Roll()}, dicesOwner));
     }
 }

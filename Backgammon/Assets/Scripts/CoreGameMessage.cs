@@ -72,11 +72,11 @@ public class CoreGameMessage
         }
     }
 
-    public class DiceShuffled : IMessage
+    public class DiceRolled : IMessage
     {
         public readonly List<int> Dice;
         public readonly int CurrentPlayerIndex;
-        public DiceShuffled(List<int> diceVales, int currentPlayerIndex)
+        public DiceRolled(List<int> diceVales, int currentPlayerIndex)
         {
             Dice = diceVales;
             CurrentPlayerIndex = currentPlayerIndex;

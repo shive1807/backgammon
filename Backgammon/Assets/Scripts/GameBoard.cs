@@ -31,8 +31,8 @@ public class GameBoard : MonoBehaviour
     private void OnEnable()
     {
         MessageBus.Instance.Subscribe<CoreGameMessage.GameSetup>(OnGameSetup);
-        MessageBus.Instance.Subscribe<CoreGameMessage.TurnDiceSetupAndRoll>(OnTurnStartDice);
-        MessageBus.Instance.Subscribe<CoreGameMessage.DiceShuffled>(OnDiceShuffled);
+        MessageBus.Instance.Subscribe<CoreGameMessage.TurnDiceSetupAndRoll>(TurnDiceSetupAndRoll);
+        MessageBus.Instance.Subscribe<CoreGameMessage.DiceRolled>(OnDiceShuffled);
         MessageBus.Instance.Subscribe<CoreGameMessage.CoinClicked>(OnCoinClicked);
         MessageBus.Instance.Subscribe<CoreGameMessage.RingClicked>(OnRingClicked);
         MessageBus.Instance.Subscribe<CoreGameMessage.OnCheckerMoved>(OnCheckerMoved);
@@ -42,8 +42,8 @@ public class GameBoard : MonoBehaviour
     private void OnDisable()
     {
         MessageBus.Instance.Unsubscribe<CoreGameMessage.GameSetup>(OnGameSetup);
-        MessageBus.Instance.Unsubscribe<CoreGameMessage.TurnDiceSetupAndRoll>(OnTurnStartDice);
-        MessageBus.Instance.Unsubscribe<CoreGameMessage.DiceShuffled>(OnDiceShuffled);
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.TurnDiceSetupAndRoll>(TurnDiceSetupAndRoll);
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.DiceRolled>(OnDiceShuffled);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.CoinClicked>(OnCoinClicked);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.RingClicked>(OnRingClicked);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.OnCheckerMoved>(OnCheckerMoved);
@@ -81,7 +81,7 @@ public class GameBoard : MonoBehaviour
         }
     }
 
-    private void OnDiceShuffled(CoreGameMessage.DiceShuffled message)
+    private void OnDiceShuffled(CoreGameMessage.DiceRolled message)
     {
         _diceValues = message.Dice;
     }
@@ -130,8 +130,9 @@ public class GameBoard : MonoBehaviour
         return _availableActions;
     }
 
-
-    private void OnTurnStartDice(CoreGameMessage.TurnDiceSetupAndRoll message)
+    //update current player turn.
+    //turn started and dice is rolled.
+    private void TurnDiceSetupAndRoll(CoreGameMessage.TurnDiceSetupAndRoll message)
     {
         _currentTurn = message.PlayerIndex;
     }
@@ -141,7 +142,7 @@ public class GameBoard : MonoBehaviour
     {
         //MessageBus.Instance.Publish(new CoreGameMessage.CleanTowerRings());
         
-        var diceValues = GameManager.Instance.GetTurnManager().GetDiceValues();
+        var diceValues = _diceValues;
         var runOnce       = diceValues.Distinct().Count() != diceValues.Count();
 
         foreach (var diceValue in diceValues)
