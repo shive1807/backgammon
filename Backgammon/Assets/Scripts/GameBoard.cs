@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
@@ -6,8 +7,13 @@ public class GameBoard : MonoBehaviour
 {
     public List<Tower> towers = new (); // 24 towers on the board
 
+    private int _availableActions;
+
+    private int _currentTurn;
+    
     private void OnGameSetup(CoreGameMessage.GameSetup message)
     {
+        _availableActions = 0;
         //initialize tower index.
         var i = 0;
         foreach (var tower in towers)
@@ -27,6 +33,8 @@ public class GameBoard : MonoBehaviour
     private void OnEnable()
     {
         MessageBus.Instance.Subscribe<CoreGameMessage.GameSetup>(OnGameSetup);
+        MessageBus.Instance.Subscribe<CoreGameMessage.TurnStartDice>(OnTurnStartDice);
+        MessageBus.Instance.Subscribe<CoreGameMessage.DiceShuffled>(OnDiceShuffled);
         MessageBus.Instance.Subscribe<CoreGameMessage.CoinClicked>(OnCoinClicked);
         MessageBus.Instance.Subscribe<CoreGameMessage.RingClicked>(OnRingClicked);
     }
@@ -34,6 +42,8 @@ public class GameBoard : MonoBehaviour
     private void OnDisable()
     {
         MessageBus.Instance.Unsubscribe<CoreGameMessage.GameSetup>(OnGameSetup);
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.TurnStartDice>(OnTurnStartDice);
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.DiceShuffled>(OnDiceShuffled);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.CoinClicked>(OnCoinClicked);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.RingClicked>(OnRingClicked);
     }
@@ -78,7 +88,61 @@ public class GameBoard : MonoBehaviour
             //tower.ClearTower();
         }
     }
-    
+
+    private void OnDiceShuffled(CoreGameMessage.DiceShuffled message)
+    {
+        if (GetAvailableActions(message.Dice) > 0)
+        {
+            //let user play.
+        }
+        else
+        {
+            StartCoroutine(DelaySwitchTurn());
+        }
+    }
+
+    private static IEnumerator DelaySwitchTurn()
+    {
+        yield return new WaitForSeconds(1f);
+        MessageBus.Instance.Publish(new CoreGameMessage.SwitchTurn());
+    }
+
+    private int GetAvailableActions(List<int> diceValues)
+    {
+        _availableActions = 0;
+        
+        foreach (var tower in towers)
+        {
+            if (tower.IsOwnedBy(_currentTurn))
+            {
+                foreach (var diceValue in diceValues)
+                {
+                    int targetValue = tower.TowerIndex;
+
+                    if (_currentTurn == 0)
+                    {
+                        targetValue -= diceValue;
+                    }
+                    else
+                    {
+                        targetValue += diceValue;
+                    }
+                    if (targetValue > towers.Count || targetValue < 0)
+                    {
+                        continue;
+                    }
+
+                    _availableActions++;
+                }
+            }
+        }
+        return _availableActions;
+    }
+
+    private void OnTurnStartDice(CoreGameMessage.TurnStartDice message)
+    {
+        _currentTurn = message.PlayerIndex;
+    }
 
     //listens to event raised by coin.
     private void OnCoinClicked(CoreGameMessage.CoinClicked message)

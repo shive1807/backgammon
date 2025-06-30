@@ -5154,6 +5154,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8aebfc4aaa04494389e527711606574, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  doneButton: {fileID: 2051875510}
+  resetButton: {fileID: 792062081}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

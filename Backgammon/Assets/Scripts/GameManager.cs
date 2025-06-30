@@ -1,3 +1,6 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -51,6 +54,21 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         HandleStateUpdate();
+    }
+
+    private void OnEnable()
+    {
+        MessageBus.Instance.Subscribe<CoreGameMessage.OnDonePressed>(OnDonePressed);
+    }
+
+    private void OnDisable()
+    {
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.OnDonePressed>(OnDonePressed);
+    }
+
+    private void OnDonePressed(CoreGameMessage.OnDonePressed message)
+    {
+        TransitionToState(GameState.SwitchTurn);
     }
 
     /// <summary>
@@ -134,6 +152,12 @@ public class GameManager : MonoBehaviour
     private void SwitchTurn()
     {
         MessageBus.Instance.Publish(new CoreGameMessage.SwitchTurn());
+        StartCoroutine(SetDelayedRollDice());
+    }
+
+    private IEnumerator SetDelayedRollDice()
+    {
+        yield return new WaitForSeconds(1f);
         TransitionToState(GameState.RollDice);
     }
 

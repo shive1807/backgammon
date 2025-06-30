@@ -78,12 +78,12 @@ public class CoreGameMessage
         }
     }
 
-    public class OnDonePressed
+    public class OnDonePressed : IMessage
     {
         
     }
 
-    public class OnResetPressed
+    public class OnResetPressed : IMessage
     {
         
     }
