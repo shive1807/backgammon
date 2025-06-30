@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 /// <summary>
 /// Represents a single tower (point) on the Backgammon board.
@@ -12,7 +13,7 @@ public class Tower : MonoBehaviour
     public int TowerIndex { get; private set; }
 
     // Stack to hold the checkers currently on this tower
-    private Stack<Coin> Checkers { get; set; } = new Stack<Coin>();
+    private Stack<Coin> Coins { get; set; } = new Stack<Coin>();
     private Stack<Ring> Rings { get; set; } = new Stack<Ring>();
 
     // ID of the player who currently owns this tower (-1 means unoccupied)
@@ -59,7 +60,7 @@ public class Tower : MonoBehaviour
 
 
         // If the tower is empty, assign ownership
-        if (Checkers.Count == 0)
+        if (Coins.Count == 0)
         {
             OwnerPlayerId = playerId;
         }
@@ -73,29 +74,45 @@ public class Tower : MonoBehaviour
 
         coin.SetCoin(OwnerPlayerId, TowerIndex);
         // Add to the checker stack
-        Checkers.Push(coin);
+        Coins.Push(coin);
 
 
         // Determine a stacking direction based on index
         var direction = TowerIndex <= 11 ? Vector3.up : Vector3.down;
 
         // Position the checker visually based on stack height and direction
-        var newPos = transform.position + direction * CheckerOffsetY * (Checkers.Count - 1);
+        var newPos = transform.position + direction * CheckerOffsetY * (Coins.Count - 1);
         coinObject.transform.position = newPos;
     }
 
-    public void AddChecker(Coin coin)
+    public void AddCoin(Coin coin)
     {
-        coin.SetCoin(OwnerPlayerId, TowerIndex);
-        Checkers.Push(coin);
+        Coins.Push(coin);
         var direction = TowerIndex <= 11 ? Vector3.up : Vector3.down;
-        var newPos = transform.position + direction * CheckerOffsetY * (Checkers.Count - 1);
+        var newPos = transform.position + direction * CheckerOffsetY * (Coins.Count - 1);
         coin.gameObject.transform.position = newPos;
+        coin.UpdateCoinTower(TowerIndex, true);
+    }
+
+    public void ResetCoin(Coin coin)
+    {
+        Coins.Push(coin);
+        var direction = TowerIndex <= 11 ? Vector3.up : Vector3.down;
+        var newPos = transform.position + direction * CheckerOffsetY * (Coins.Count - 1);
+        coin.gameObject.transform.position = newPos;
+        coin.UpdateCoinTower(TowerIndex, false);
+    }
+
+    public int GetListOfMovedCoins() => Coins.Count(coin => coin.GetIsMovedInCurrentTurn());
+
+    public Coin RemoveCoin(Coin coin)
+    {
+        return Coins.Pop();
     }
 
     public void HighlightTopCoin()
     {
-        var coin = Checkers.Peek();
+        var coin = Coins.Peek();
         coin.Highlight();
     }
     
@@ -105,7 +122,7 @@ public class Tower : MonoBehaviour
         var ring = ringObject.GetComponent<Ring>();
 
         // If the tower is empty, assign ownership
-        if (Checkers.Count == 0)
+        if (Coins.Count == 0)
         {
             OwnerPlayerId = playerId;
         }
@@ -127,7 +144,7 @@ public class Tower : MonoBehaviour
         var direction = TowerIndex <= 11 ? Vector3.up : Vector3.down;
 
         // Position the checker visually based on stack height and direction
-        var newPos = transform.position + direction * CheckerOffsetY * (Checkers.Count - 1);
+        var newPos = transform.position + direction * CheckerOffsetY * (Coins.Count - 1);
         ringObject.transform.position = newPos;
     }
 
@@ -148,13 +165,13 @@ public class Tower : MonoBehaviour
     /// <returns>The removed checker GameObject, or null if empty.</returns>
     public Coin RemoveTopChecker()
     {
-        if (Checkers.Count == 0)
+        if (Coins.Count == 0)
             return null;
 
-        Coin topChecker = Checkers.Pop();
+        Coin topChecker = Coins.Pop();
 
         // Reset ownership if the tower is now empty
-        if (Checkers.Count == 0)
+        if (Coins.Count == 0)
         {
             OwnerPlayerId = -1;
         }
@@ -164,7 +181,7 @@ public class Tower : MonoBehaviour
     /// <summary>
     /// Gets the number of checkers currently on the tower.
     /// </summary>
-    public int CheckerCount => Checkers.Count;
+    public int CheckerCount => Coins.Count;
 
     /// <summary>
     /// Checks if the tower is currently owned by the given player.
@@ -176,19 +193,19 @@ public class Tower : MonoBehaviour
     /// <summary>
     /// Checks whether the tower is empty.
     /// </summary>
-    public bool IsEmpty() => Checkers.Count == 0;
+    public bool IsEmpty() => Coins.Count == 0;
 
     /// <summary>
     /// Clears all checkers from the tower (used during reset).
     /// </summary>
     public void ClearTower()
     {
-        foreach (var checker in Checkers)
+        foreach (var checker in Coins)
         {
             Destroy(checker); // Remove from scene
         }
 
-        Checkers.Clear();
+        Coins.Clear();
         OwnerPlayerId = -1;
     }
 }

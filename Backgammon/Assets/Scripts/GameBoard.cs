@@ -15,8 +15,16 @@ public class GameBoard : MonoBehaviour
 
     private List<int> _diceValuesUsed;
     
+    [SerializeField]
+    private Tower whiteSpawnPoint;
+    
+    [SerializeField]
+    private Tower blackSpawnPoint;
+    
     private void OnGameSetup(CoreGameMessage.GameSetup message)
     {
+        _diceValuesUsed   = new List<int>();
+        _diceValues       = new List<int>();
         _availableActions = 0;
         //initialize tower index.
         var i = 0;
@@ -94,10 +102,7 @@ public class GameBoard : MonoBehaviour
         MessageBus.Instance.Publish(new CoreGameMessage.SwitchTurn());
     }
 
-    private void OnResetPressed(CoreGameMessage.OnResetPressed message)
-    {
-        
-    }
+    
 
     private int GetAvailableActions(List<int> diceValues)
     {
@@ -177,8 +182,27 @@ public class GameBoard : MonoBehaviour
     private void OnRingClicked(CoreGameMessage.RingClicked message)
     {
         var topChecker = towers[message.SourceTowerIndex].RemoveTopChecker();
-        towers[message.CurrentTowerIndex].AddChecker(topChecker);
+        towers[message.CurrentTowerIndex].AddCoin(topChecker);
         MessageBus.Instance.Publish(new CoreGameMessage.CleanTowerRings());
         MessageBus.Instance.Publish(new CoreGameMessage.OnCoinMoved(Mathf.Abs(message.SourceTowerIndex - message.CurrentTowerIndex)));
+    }
+    
+    //remove from the current tower and move the coin to the previous tower.
+    private void OnResetPressed(CoreGameMessage.OnResetPressed message)
+    {
+        //Get the used values and put it to available dice values.
+        _diceValues.AddRange(_diceValuesUsed);
+        _diceValuesUsed.Clear();
+        
+        //Call each tower to put back the newly moved coin if they have any.
+        foreach (var tower in towers)
+        {
+            var coinsToMove = tower.GetListOfMovedCoins();
+            for (var i = 0; i < coinsToMove; i++)
+            {
+                var coin = tower.RemoveTopChecker();
+                towers[coin.GetPrevTower()].ResetCoin(coin);
+            }
+        }
     }
 }

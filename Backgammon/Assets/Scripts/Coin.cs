@@ -9,7 +9,8 @@ public class Coin : MonoBehaviour
     private int _prevTower;
     private int _currentTower; // ID or index of the tower this coin is currently on
     private int _ownerId;      // ID of the player who owns this coin
-
+    private bool _isMovedInCurrentTurn;
+    
     [SerializeField]
     private SpriteRenderer highlightRenderer;
 
@@ -78,12 +79,18 @@ public class Coin : MonoBehaviour
     /// <summary>
     /// Updates the coin current tower.
     /// </summary>
-    public void UpdateCoinTower(int targetTower)
+    public void UpdateCoinTower(int targetTower, bool isMovedInCurrentTurn)
     {
-        _prevTower = _currentTower;
+        _prevTower    = _currentTower;
         _currentTower = targetTower;
+        _isMovedInCurrentTurn = isMovedInCurrentTurn;
     }
-
+    
+    public int GetPrevTower() => _prevTower;
+    public int GetCurrentTower() => _currentTower;
+    
+    public bool GetIsMovedInCurrentTurn() => _isMovedInCurrentTurn;
+    
     public void Highlight(bool show = true)
     {
         highlightRenderer.gameObject.SetActive(show);
