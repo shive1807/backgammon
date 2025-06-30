@@ -5,7 +5,7 @@ Here's a **beautiful, professional, and eye-catching `README.md`** for your Back
 ````md
 # 🎲 Backgammon in Unity
 
-![Backgammon Banner](https://user-images.githubusercontent.com/your-banner-placeholder.gif)
+![Backgammon Banner](https://cdn.dribbble.com/userupload/14950078/file/original-e4c654228f3f809d896d44ce754f95c0.webp?resize=2048x2048&vertical=center)
 
 A modern and elegant implementation of the classic **Backgammon** board game built with **Unity Engine** 🧠✨  
 Designed for casual and competitive players alike, this project emphasizes clean architecture, smooth gameplay, and beautiful visuals.
