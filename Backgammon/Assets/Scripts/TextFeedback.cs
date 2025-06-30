@@ -11,7 +11,7 @@ public class TextFeedback : MonoBehaviour
         _feedbackText = GetComponent<TextMeshProUGUI>();
         ResetText();
         
-        MessageBus.Instance.Subscribe<CoreGameMessage.TurnStartDiceRolled>(OnTurnStartDice);
+        MessageBus.Instance.Subscribe<CoreGameMessage.TurnDiceSetupAndRoll>(OnTurnStartDice);
     }
 
     private void ResetText()
@@ -19,7 +19,7 @@ public class TextFeedback : MonoBehaviour
         _feedbackText.text = "";
     }
 
-    private void OnTurnStartDice(CoreGameMessage.TurnStartDiceRolled message)
+    private void OnTurnStartDice(CoreGameMessage.TurnDiceSetupAndRoll message)
     {
         ResetText();
         _feedbackText.text = GameManager.Instance.GetTurnManager().GetCurrentTurn == 0 ? "White To Move" : "Black To Move";
