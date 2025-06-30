@@ -1836,6 +1836,7 @@ GameObject:
   m_Component:
   - component: {fileID: 645751582}
   - component: {fileID: 645751583}
+  - component: {fileID: 645751584}
   m_Layer: 5
   m_Name: DiceP2
   m_TagString: Untagged
@@ -1890,6 +1891,18 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &645751584
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 645751581}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97ce4b921569a4b0ead3e1ba8c83770c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &678470230
 GameObject:
   m_ObjectHideFlags: 0
@@ -2041,10 +2054,6 @@ MonoBehaviour:
   - {fileID: 614979060}
   - {fileID: 740924105}
   - {fileID: 1149994585}
-  whiteTowerStack: {fileID: 1970050003}
-  blackTowerStack: {fileID: 2002342874}
-  coinPrefab: {fileID: 2295515244907595222, guid: 8874b171fda31408e948179062473fdb, type: 3}
-  ringPrefab: {fileID: 2295515244907595222, guid: 94f6cc808866644f1a8fb00bb3af6562, type: 3}
 --- !u!1 &706869594
 GameObject:
   m_ObjectHideFlags: 0
@@ -2618,6 +2627,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1006681793}
   - component: {fileID: 1006681794}
+  - component: {fileID: 1006681795}
+  - component: {fileID: 1006681796}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -2653,12 +2664,35 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentState: 0
-  dice1: {fileID: 0}
-  dice2: {fileID: 0}
-  selectedCoin: {fileID: 0}
-  player1Coins: []
-  player2Coins: []
-  Ring: {fileID: 0}
+--- !u!114 &1006681795
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1006681792}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13ff44bd401ac4b7899eb02e66463b3d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefabEntries:
+  - name: Coin
+    prefab: {fileID: 2295515244907595222, guid: 8874b171fda31408e948179062473fdb, type: 3}
+  - name: Ring
+    prefab: {fileID: 2295515244907595222, guid: 94f6cc808866644f1a8fb00bb3af6562, type: 3}
+--- !u!114 &1006681796
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1006681792}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b004d224d97f46e5a89333467877ce5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1047020652
 GameObject:
   m_ObjectHideFlags: 0
@@ -3823,6 +3857,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1430281198}
   - component: {fileID: 1430281199}
+  - component: {fileID: 1430281200}
   m_Layer: 5
   m_Name: DiceP1
   m_TagString: Untagged
@@ -3877,6 +3912,18 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &1430281200
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1430281197}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97ce4b921569a4b0ead3e1ba8c83770c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1526054243
 GameObject:
   m_ObjectHideFlags: 0
@@ -5038,10 +5085,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1080, y: 1920}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3

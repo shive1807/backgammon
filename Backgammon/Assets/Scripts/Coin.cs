@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -52,11 +53,11 @@ public class Coin : MonoBehaviour
         Debug.Log($"✅ Coin {gameObject.name} clicked!");
 
         // Ensure only the owner can interact with the coin
-        if (_ownerId != GameManager.Instance.CurrentPlayer)
+        if (_ownerId != GameManager.Instance.GetTurnManager().GetCurrentTurn)
             return;
 
         // Publish an event to the message bus indicating this coin was clicked
-        MessageBus.Instance.Publish(new CoreGameMessage.CoinClicked(_currentTower));
+        MessageBus.Instance.Publish(new CoreGameMessage.CoinClicked(_ownerId, _currentTower));
         Debug.Log($"Coin {gameObject.name} is currently on Tower: {_currentTower}");
     }
 
@@ -67,5 +68,10 @@ public class Coin : MonoBehaviour
     {
         _prevTower = _currentTower;
         _currentTower = targetTower;
+    }
+
+    private void OnDisable()
+    {
+        Debug.Log("Getting Disabled");
     }
 }

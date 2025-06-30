@@ -1,6 +1,8 @@
 using UnityEngine;
-using System.Collections.Generic;
 
+/// <summary>
+/// Enum representing the different phases of the game.
+/// </summary>
 public enum GameState
 {
     Idle,
@@ -11,18 +13,34 @@ public enum GameState
     GameOver
 }
 
+/// <summary>
+/// GameManager controls the overall game state and transitions.
+/// </summary>
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance;
+    public static GameManager Instance { get; private set; }
 
-    public GameState currentState = GameState.Idle;
+    [Header("Game State")] 
+    private GameState CurrentState { get; set; } = GameState.Idle;
 
-    private List<int> _diceValues;
-    private int _currentPlayer = 0;
+    private TurnManager _turnManager;
 
     private void Awake()
     {
+        // Ensure singleton pattern
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
         Instance = this;
+
+        _turnManager = GetComponent<TurnManager>();
+        
+        if (_turnManager == null)
+        {
+            Debug.LogError("TurnManager not found on GameManager!");
+        }
     }
 
     private void Start()
@@ -30,43 +48,44 @@ public class GameManager : MonoBehaviour
         TransitionToState(GameState.Setup);
     }
 
-    void Update()
+    private void Update()
     {
-        switch (currentState)
-        {
-            case GameState.Setup:
-                break;
+        HandleStateUpdate();
+    }
 
+    /// <summary>
+    /// Main state update handler called every frame.
+    /// </summary>
+    private void HandleStateUpdate()
+    {
+        switch (CurrentState)
+        {
             case GameState.RollDice:
-                // Could auto-roll or wait for player to tap
-                if (Input.GetKeyDown(KeyCode.Space)) // Replace with button tap
+                // Simulate dice roll on space key press (replace with UI input)
+                if (Input.GetKeyDown(KeyCode.Space))
                 {
-                    _diceValues = CanvasManager.Instance.ShuffleDiceAndReturnValues(_currentPlayer);
-                    Debug.Log($"Player {_currentPlayer} rolled: {_diceValues[0]} and {_diceValues[1]}");
                     TransitionToState(GameState.PlayerMove);
                 }
                 break;
 
             case GameState.PlayerMove:
-                // Wait for coin selection and validate move
-                break;
-
-            case GameState.SwitchTurn:
-                _currentPlayer++; // Toggle 1 <-> 2
-                _currentPlayer %= 2;
-                TransitionToState(GameState.RollDice);
+                // Await player interaction (e.g., selecting and moving a coin)
                 break;
 
             case GameState.GameOver:
+                // Show Game Over UI or handle cleanup
                 Debug.Log("Game Over!");
                 break;
         }
     }
 
+    /// <summary>
+    /// Transitions the game to a new state and triggers any entry logic.
+    /// </summary>
     public void TransitionToState(GameState newState)
     {
-        Debug.Log($"Transitioning to {newState}...");
-        currentState = newState;
+        Debug.Log($"[GameManager] Transitioning from {CurrentState} to {newState}");
+        CurrentState = newState;
 
         switch (newState)
         {
@@ -75,52 +94,51 @@ public class GameManager : MonoBehaviour
                 break;
 
             case GameState.RollDice:
-                CanvasManager.Instance.SetPlayerDice();
+                MessageBus.Instance.Publish(new CoreGameMessage.TurnStartDice(_turnManager.GetCurrentTurn));
                 break;
 
             case GameState.PlayerMove:
-                AllowPlayerToMove();
+                EnablePlayerMove();
                 break;
 
             case GameState.SwitchTurn:
-                TransitionToState(GameState.SwitchTurn);
+                SwitchTurn();
+                break;
+
+            case GameState.GameOver:
+                // Game over logic handled in Update or externally
                 break;
         }
     }
 
-    void SetupGame()
+    /// <summary>
+    /// Publishes a game setup message and begins first turn.
+    /// </summary>
+    private void SetupGame()
     {
-        // Initialize board, spawn coins, etc.
+        MessageBus.Instance.Publish(new CoreGameMessage.GameSetup());
         TransitionToState(GameState.RollDice);
     }
 
-    void AllowPlayerToMove()
+    /// <summary>
+    /// Called when the current player can make a move.
+    /// </summary>
+    private void EnablePlayerMove()
     {
-        Debug.Log($"Player {_currentPlayer} can now move using dice {_diceValues[0]} and {_diceValues[1]}");
-        // Wait for coin interaction through Coin.cs
+        // Enable player controls here
     }
 
-    public void CoinMoved()
+    /// <summary>
+    /// Handles logic for switching to the next player's turn.
+    /// </summary>
+    private void SwitchTurn()
     {
-        Debug.Log("Coin moved successfully.");
-        TransitionToState(GameState.SwitchTurn);
+        MessageBus.Instance.Publish(new CoreGameMessage.SwitchTurn());
+        TransitionToState(GameState.RollDice);
     }
 
-    public bool IsPlayerTurn(int playerId)
-    {
-        return playerId == _currentPlayer;
-    }
-
-    public List<int> GetDiceValues()
-    {
-        return _diceValues;
-    }
-
-    public List<int> RemovePlayedValuesFromDice(int playedValue)
-    {
-        _diceValues.Remove(playedValue);
-        return _diceValues;
-    }
-
-    public int CurrentPlayer => _currentPlayer;
+    /// <summary>
+    /// Provides access to the TurnManager.
+    /// </summary>
+    public TurnManager GetTurnManager() => _turnManager;
 }

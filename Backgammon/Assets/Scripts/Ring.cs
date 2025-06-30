@@ -1,16 +1,13 @@
-using System;
 using UnityEngine;
 
 public class Ring : MonoBehaviour
 {
-    public Tower            currentTower;
-    public Tower            sourceTower;
-
-    private SpriteRenderer  _spriteRenderer;
+    private int             _sourceTowerIndex;
+    private int             _currentTowerIndex;
     private bool            _shouldRegisterInput;
-    public event Action<Tower, Tower> OnRingClicked;
+    private SpriteRenderer  _spriteRenderer;
 
-    void Start()
+    private void Start()
     {
         // Get the SpriteRenderer component on this GameObject
         _spriteRenderer = GetComponent<SpriteRenderer>();
@@ -21,45 +18,26 @@ public class Ring : MonoBehaviour
         }
     }
 
-    public void SetCurrentTower(Tower currTower, Tower sTower)
+    public void SetCurrentTower(int sTower, int currTower, bool isTowerAvailable)
     {
-        currentTower = currTower;
-        sourceTower  = sTower;
+        _currentTowerIndex = currTower;
+        _sourceTowerIndex  = sTower;
         
-        Debug.Log($"Coin {gameObject.name} placed on Tower: {currentTower.name}");
-        if (currentTower.GetOwnerPlayerId() == GameManager.Instance.CurrentPlayer)
-        {
-            SetGreen();
-            _shouldRegisterInput = true;
-        }
-        else
-        {
-            SetRed();
-            _shouldRegisterInput = false;
-        }
+        Debug.Log($"Coin {gameObject.name} placed on Tower: {_currentTowerIndex}");
+        PresentRing(isTowerAvailable);
+        _shouldRegisterInput = isTowerAvailable;
     }
 
-    // Set the ring color to green
-    private void SetGreen()
+    private void PresentRing(bool isTowerAvailable)
     {
         if (_spriteRenderer == null)
         {
             _spriteRenderer = GetComponent<SpriteRenderer>();
         }
-        _spriteRenderer.color = Color.green;
-        Debug.Log("Ring color set to green.");
+
+        _spriteRenderer.color = isTowerAvailable ? Color.green : Color.red;
     }
 
-    // Set the ring color to red
-    private void SetRed()
-    {
-        if (_spriteRenderer == null)
-        {
-            _spriteRenderer = GetComponent<SpriteRenderer>();
-        }
-        _spriteRenderer.color = Color.red;
-        Debug.Log("Ring color set to red.");
-    }
 
     // Detect touch or mouse click
     private void OnMouseDown()
@@ -67,7 +45,7 @@ public class Ring : MonoBehaviour
         Debug.Log($"Ring {gameObject.name} was touched/clicked.");
         if (_shouldRegisterInput)
         {
-            OnRingClicked?.Invoke(sourceTower, currentTower);
+            MessageBus.Instance.Publish(new CoreGameMessage.RingClicked(_sourceTowerIndex, _currentTowerIndex));
         }
     }
 }

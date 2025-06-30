@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
 
 /// <summary>
 /// Represents a single tower (point) on the Backgammon board.
@@ -12,8 +12,8 @@ public class Tower : MonoBehaviour
     public int TowerIndex { get; private set; }
 
     // Stack to hold the checkers currently on this tower
-    private Stack<GameObject> Checkers { get; set; } = new Stack<GameObject>();
-    private Stack<GameObject> Rings { get; set; } = new Stack<GameObject>();
+    private Stack<Coin> Checkers { get; set; } = new Stack<Coin>();
+    private Stack<Ring> Rings { get; set; } = new Stack<Ring>();
 
     // ID of the player who currently owns this tower (-1 means unoccupied)
     private int OwnerPlayerId { get; set; } = -1;
@@ -25,18 +25,14 @@ public class Tower : MonoBehaviour
 
     private void OnEnable()
     {
-        MessageBus.Instance.Subscribe<CoreGameMessage.CoinClicked>(OnCoinClicked);
+        MessageBus.Instance.Subscribe<CoreGameMessage.CleanTowerRings>(OnCleanTowerRing);
     }
 
     private void OnDisable()
     {
-        MessageBus.Instance.Unsubscribe<CoreGameMessage.CoinClicked>(OnCoinClicked);
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.CleanTowerRings>(OnCleanTowerRing);
     }
 
-    private void OnCoinClicked(CoreGameMessage.CoinClicked message)
-    {
-        var coinClicked = message.Coin;
-    }
 
     /// <summary>
     /// Sets the tower's index (usually done at initialization time).
@@ -52,39 +48,56 @@ public class Tower : MonoBehaviour
     /// Sets the tower's ownership if it's the first checker.
     /// Prevents adding an opponent's checker if it's already owned.
     /// </summary>
-    /// <param name="checker">The checker GameObject to add.</param>
     /// <param name="playerId">The ID of the player owning the checker.</param>
-    public void AddChecker(GameObject checker, int playerId)
+    public void AddChecker(int playerId)
     {
+        var coinObject = Instantiate(PrefabManager.Instance.GetPrefab(GameSettings.CoinPrefab), transform, true);
+        var coin       = coinObject.GetComponent<Coin>();
+        
+        coinObject.name = playerId == 0 ? $"WhiteChecker_{TowerIndex}" : $"BlackChecker_{TowerIndex}";
+        coinObject.GetComponent<Renderer>().material.color = playerId == 0 ? Color.white : Color.gray;
+
+
         // If the tower is empty, assign ownership
         if (Checkers.Count == 0)
         {
             OwnerPlayerId = playerId;
         }
+        
         // Disallow placing opponent's checker if already owned
         else if (OwnerPlayerId != playerId)
         {
             Debug.LogWarning("Attempted to add opponent's checker to this tower.");
             return;
         }
-        
-        checker.GetComponent<Coin>().SetCoin(OwnerPlayerId, TowerIndex);
-        // Add to the checker stack
-        Checkers.Push(checker);
 
-        // Make it a child of this tower for scene hierarchy organization
-        checker.transform.SetParent(transform);
+        coin.SetCoin(OwnerPlayerId, TowerIndex);
+        // Add to the checker stack
+        Checkers.Push(coin);
+
 
         // Determine a stacking direction based on index
-        Vector3 direction = TowerIndex <= 11 ? Vector3.up : Vector3.down;
+        var direction = TowerIndex <= 11 ? Vector3.up : Vector3.down;
 
         // Position the checker visually based on stack height and direction
-        Vector3 newPos = transform.position + direction * CheckerOffsetY * (Checkers.Count - 1);
-        checker.transform.position = newPos;
+        var newPos = transform.position + direction * CheckerOffsetY * (Checkers.Count - 1);
+        coinObject.transform.position = newPos;
+    }
+
+    public void AddChecker(Coin coin)
+    {
+        coin.SetCoin(OwnerPlayerId, TowerIndex);
+        Checkers.Push(coin);
+        var direction = TowerIndex <= 11 ? Vector3.up : Vector3.down;
+        var newPos = transform.position + direction * CheckerOffsetY * (Checkers.Count - 1);
+        coin.gameObject.transform.position = newPos;
     }
     
-    public void AddRing(GameObject ring, int playerId, Tower sourceTower)
+    public void AddRing(int playerId, int sourceTowerIndex, int currentTowerIndex)
     {
+        var ringObject = Instantiate(PrefabManager.Instance.GetPrefab(GameSettings.RingPrefab), transform, true);
+        var ring = ringObject.GetComponent<Ring>();
+
         // If the tower is empty, assign ownership
         if (Checkers.Count == 0)
         {
@@ -94,23 +107,32 @@ public class Tower : MonoBehaviour
         else if (OwnerPlayerId != playerId)
         {
             // Debug.LogWarning("Attempted to add opponent's checker to this tower.");
-            // return;
+            //return;
         }
-        
-        ring.GetComponent<Ring>().SetCurrentTower(this, sourceTower);
+
+        // r.SetCurrentTower(this);
         
         // Add to the checker stack
         Rings.Push(ring);
-
+        ring.SetCurrentTower(sourceTowerIndex, currentTowerIndex, OwnerPlayerId == playerId);
         // Make it a child of this tower for scene hierarchy organization
-        ring.transform.SetParent(transform);
 
         // Determine a stacking direction based on index
-        Vector3 direction = TowerIndex <= 11 ? Vector3.up : Vector3.down;
+        var direction = TowerIndex <= 11 ? Vector3.up : Vector3.down;
 
         // Position the checker visually based on stack height and direction
-        Vector3 newPos = transform.position + direction * CheckerOffsetY * (Checkers.Count - 1);
-        ring.transform.position = newPos;
+        var newPos = transform.position + direction * CheckerOffsetY * (Checkers.Count - 1);
+        ringObject.transform.position = newPos;
+    }
+
+    private void OnCleanTowerRing(CoreGameMessage.CleanTowerRings message)
+    {
+        foreach (var ring in Rings)
+        {
+            Destroy(ring.gameObject);
+        }
+        
+        Rings.Clear();
     }
 
     /// <summary>
@@ -118,12 +140,12 @@ public class Tower : MonoBehaviour
     /// Clears ownership if the tower becomes empty.
     /// </summary>
     /// <returns>The removed checker GameObject, or null if empty.</returns>
-    public GameObject RemoveTopChecker()
+    public Coin RemoveTopChecker()
     {
         if (Checkers.Count == 0)
             return null;
 
-        GameObject topChecker = Checkers.Pop();
+        Coin topChecker = Checkers.Pop();
 
         // Reset ownership if the tower is now empty
         if (Checkers.Count == 0)
@@ -133,16 +155,6 @@ public class Tower : MonoBehaviour
 
         return topChecker;
     }
-
-    /// <summary>
-    /// Peeks at the top checker without removing it.
-    /// </summary>
-    /// <returns>The top checker GameObject, or null if none.</returns>
-    public GameObject PeekTopChecker()
-    {
-        return Checkers.Count > 0 ? Checkers.Peek() : null;
-    }
-
     /// <summary>
     /// Gets the number of checkers currently on the tower.
     /// </summary>

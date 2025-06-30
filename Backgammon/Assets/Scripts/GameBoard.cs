@@ -1,17 +1,12 @@
 using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 
 public class GameBoard : MonoBehaviour
 {
     public List<Tower> towers = new (); // 24 towers on the board
-    public GameObject coinPrefab; // Prefab for checker coins
-    public GameObject ringPrefab;
-    private List<GameObject> _rings = new ();
-    private Stack<Coin> currentTurnCoins = new();
 
-    private void Start()
+    private void OnGameSetup(CoreGameMessage.GameSetup message)
     {
         //initialize tower index.
         var i = 0;
@@ -22,27 +17,41 @@ public class GameBoard : MonoBehaviour
         }
         
         // Optionally clear board before adding coins
-        foreach (var tower in towers)
-            tower.ClearTower();
+        //foreach (var tower in towers)
+            //tower.ClearTower();
 
         AddWhiteCoins();
         AddBlackCoins();
     }
-    
+
+    private void OnEnable()
+    {
+        MessageBus.Instance.Subscribe<CoreGameMessage.GameSetup>(OnGameSetup);
+        MessageBus.Instance.Subscribe<CoreGameMessage.CoinClicked>(OnCoinClicked);
+        MessageBus.Instance.Subscribe<CoreGameMessage.RingClicked>(OnRingClicked);
+    }
+
+    private void OnDisable()
+    {
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.GameSetup>(OnGameSetup);
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.CoinClicked>(OnCoinClicked);
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.RingClicked>(OnRingClicked);
+    }
+
     private void AddWhiteCoins()
     {
-        AddCoinsToTower(23, 2, 0); // Tower 24 (index 23)
-        AddCoinsToTower(12, 5, 0); // Tower 13 (index 12)
-        AddCoinsToTower(7, 3, 0);  // Tower 8 (index 7)
-        AddCoinsToTower(5, 5, 0);  // Tower 6 (index 5)
+        AddCoinsToTower(GameSettings.TowerIndex_TopRight,    GameSettings.Coins_TopRight,    GameSettings.Player0);
+        AddCoinsToTower(GameSettings.TowerIndex_MiddleLeft,  GameSettings.Coins_MiddleLeft,  GameSettings.Player0);
+        AddCoinsToTower(GameSettings.TowerIndex_Center,      GameSettings.Coins_Center,      GameSettings.Player0);
+        AddCoinsToTower(GameSettings.TowerIndex_BottomLeft,  GameSettings.Coins_BottomLeft,  GameSettings.Player0);
     }
 
     private void AddBlackCoins()
     {
-        AddCoinsToTower(0, 2, 1);  // Tower 1 (index 0)
-        AddCoinsToTower(11, 5, 1); // Tower 12 (index 11)
-        AddCoinsToTower(16, 3, 1); // Tower 17 (index 16)
-        AddCoinsToTower(18, 5, 1); // Tower 19 (index 18)
+        AddCoinsToTower(GameSettings.TowerIndex_TopLeft,      GameSettings.Coins_TopLeft,      GameSettings.Player1);  // Tower 1 (index 0)
+        AddCoinsToTower(GameSettings.TowerIndex_MiddleRight,  GameSettings.Coins_MiddleRight,  GameSettings.Player1); // Tower 12 (index 11)
+        AddCoinsToTower(GameSettings.TowerIndex_CenterRight,  GameSettings.Coins_CenterRight,  GameSettings.Player1); // Tower 17 (index 16)
+        AddCoinsToTower(GameSettings.TowerIndex_BottomRight,  GameSettings.Coins_BottomRight,  GameSettings.Player1); // Tower 19 (index 18)
     }
 
     /// <summary>
@@ -53,77 +62,57 @@ public class GameBoard : MonoBehaviour
     /// <param name="playerId">0 = White, 1 = Black</param>
     private void AddCoinsToTower(int towerIndex, int count, int playerId)
     {
+        CleanTowers();
+        
         for (var i = 0; i < count; i++)
         {
-            var coin = Instantiate(coinPrefab);
-            //coin.GetComponent<Coin>().OnCoinClicked += OnCoinClicked;
-            
-            if (playerId == 0)
-            {
-                coin.name = $"WhiteChecker_{towerIndex}_{i}";
-                coin.GetComponent<Renderer>().material.color = Color.white;
-            }
-            else
-            {
-                coin.name = $"BlackChecker_{towerIndex}_{i}";
-                coin.GetComponent<Renderer>().material.color = Color.gray;
-            }
+            Debug.Log($"Adding coins to tower {towerIndex} with player {playerId}");
+            towers[towerIndex].AddChecker(playerId);
+        }
+    }
 
-            towers[towerIndex].AddChecker(coin, playerId);
+    private void CleanTowers()
+    {
+        foreach (var tower in towers)
+        {
+            //tower.ClearTower();
         }
     }
     
 
-    private void OnCoinClicked(Tower tower)
+    //listens to event raised by coin.
+    private void OnCoinClicked(CoreGameMessage.CoinClicked message)
     {
-        ClearRings();
+        //MessageBus.Instance.Publish(new CoreGameMessage.CleanTowerRings());
         
-        var diceValues = GameManager.Instance.GetDiceValues();
+        var diceValues = GameManager.Instance.GetTurnManager().GetDiceValues();
         var runOnce       = diceValues.Distinct().Count() != diceValues.Count();
 
         foreach (var diceValue in diceValues)
         {
-            var ring = Instantiate(ringPrefab);
-            ring.GetComponent<Ring>().OnRingClicked += MoveChecker;
-            var towerIndex = tower.TowerIndex;
+            var towerIndex       = message.TowerIndex;
             var targetTowerIndex = towerIndex;
-            if (GameManager.Instance.CurrentPlayer == 0)
-            {
-                targetTowerIndex -= diceValue;
-            }
-            else
-            {
-                targetTowerIndex += diceValue;
-            }
+
+            //for player 0 subtract and for player 1 add the dice values.
+            targetTowerIndex += GameManager.Instance.GetTurnManager().GetCurrentTurn == 0 ? -diceValue : diceValue;
             
             if (targetTowerIndex > towers.Count || targetTowerIndex < 0)
             {
-                Destroy(ring);
                 continue;
             }
             
-            towers[targetTowerIndex].AddRing(ring, 0, tower);
-            _rings.Add(ring);
+            towers[targetTowerIndex].AddRing(message.OwnerId, towerIndex, targetTowerIndex);
 
             if (runOnce) return;
         }
     }
 
-    private void ClearRings()
-    {
-        foreach (var rings in _rings)
-        {
-            Destroy(rings);
-        }
-        _rings.Clear();
-    }
-
     //remove from the current tower and move the coin to the new target tower.
-    private void MoveChecker(Tower sourceTowerIndex, Tower targetTowerIndex)
+    private void OnRingClicked(CoreGameMessage.RingClicked message)
     {
-        var topChecker = sourceTowerIndex.RemoveTopChecker();
-        //topChecker.GetComponent<Coin>().MoveToTower(targetTowerIndex);
-        ClearRings();
-        GameManager.Instance.RemovePlayedValuesFromDice(Mathf.Abs(sourceTowerIndex.TowerIndex - targetTowerIndex.TowerIndex));
+        var topChecker = towers[message.SourceTowerIndex].RemoveTopChecker();
+        towers[message.CurrentTowerIndex].AddChecker(topChecker);
+        MessageBus.Instance.Publish(new CoreGameMessage.CleanTowerRings());
+        MessageBus.Instance.Publish(new CoreGameMessage.OnCheckerMoved(Mathf.Abs(message.SourceTowerIndex - message.CurrentTowerIndex)));
     }
 }
