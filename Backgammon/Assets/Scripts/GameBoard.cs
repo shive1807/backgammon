@@ -34,6 +34,9 @@ public class GameBoard : MonoBehaviour
             i++;
         }
         
+        blackSpawnPoint.Initialize(-1);
+        whiteSpawnPoint.Initialize(-1);
+        
         AddWhiteCoins();
         AddBlackCoins();
     }
@@ -102,8 +105,9 @@ public class GameBoard : MonoBehaviour
 
     private void OnDiceRolled(CoreGameMessage.DiceRolled message)
     {
-        _diceValues = message.Dice;
-
+        _diceValues  = message.Dice;
+        _currentTurn = message.CurrentPlayerIndex;
+        Debug.Log($"Dice rolled {_diceValues}");
         if (GetAvailableActions() == 0)
         {
             MessageBus.Instance.Publish(new CoreGameMessage.TurnOver());
@@ -137,41 +141,50 @@ public class GameBoard : MonoBehaviour
         {
             if (whiteSpawnPoint.CoinsCount > 0)
             {
-                
+                whiteSpawnPoint.HighlightTopCoin();
+                for (var i = 0; i < whiteSpawnPoint.CoinsCount; i++)
+                {
+                    _availableActions++;
+                }
+
+                return _availableActions;
             }
         }
         else
         {
             if (blackSpawnPoint.CoinsCount > 0)
             {
-                
+                blackSpawnPoint.HighlightTopCoin();
+                for (var i = 0; i < blackSpawnPoint.CoinsCount; i++)
+                {
+                    _availableActions++;
+                }
+                return _availableActions;
             }
         }
         
-        foreach (var tower in towers)
+        foreach (var tower in towers.Where(tower => tower.IsOwnedBy(_currentTurn)))
         {
-            if (tower.IsOwnedBy(_currentTurn))
+            Debug.Log("Current Tower Owned by " + tower.GetOwnerPlayerId());
+            foreach (var diceValue in _diceValues)
             {
-                foreach (var diceValue in _diceValues)
-                {
-                    var targetValue = tower.TowerIndex;
+                var targetValue = tower.TowerIndex;
 
-                    if (_currentTurn == 0)
-                    {
-                        targetValue -= diceValue;
-                    }
-                    else
-                    {
-                        targetValue += diceValue;
-                    }
-                    if (targetValue > towers.Count || targetValue < 0)
-                    {
-                        continue;
-                    }
-                    
-                    tower.HighlightTopCoin();
-                    _availableActions++;
+                if (_currentTurn == 0)
+                {
+                    targetValue -= diceValue;
                 }
+                else
+                {
+                    targetValue += diceValue;
+                }
+                if (targetValue > towers.Count || targetValue < 0)
+                {
+                    continue;
+                }
+                    
+                tower.HighlightTopCoin();
+                _availableActions++;
             }
         }
         return _availableActions;
@@ -181,26 +194,28 @@ public class GameBoard : MonoBehaviour
     //turn started and dice is rolled.
     private void TurnDiceSetupAndRoll(CoreGameMessage.TurnDiceSetupAndRoll message)
     {
+        Debug.Log($"Turn Dice Setup and Roll: {message.PlayerIndex}");
         _currentTurn = message.PlayerIndex;
     }
 
     //listens to event raised by coin.
     private void OnCoinClicked(CoreGameMessage.CoinClicked message)
     {
-        //MessageBus.Instance.Publish(new CoreGameMessage.CleanTowerRings());
-        
+        MessageBus.Instance.Publish(new CoreGameMessage.CleanTowerRings());
+
         var diceValues = _diceValues;
         var runOnce       = diceValues.Distinct().Count() != diceValues.Count();
 
         foreach (var diceValue in diceValues)
         {
+            Debug.LogWarning(message.TowerIndex + ": " + diceValue + ", runOnce: " + runOnce);
             var towerIndex       = message.TowerIndex;
             var targetTowerIndex = towerIndex;
 
             //for player 0 subtract and for player 1 add the dice values.
             targetTowerIndex += GameManager.Instance.GetTurnManager().GetCurrentTurn == 0 ? -diceValue : diceValue;
             
-            if (targetTowerIndex > towers.Count || targetTowerIndex < 0)
+            if (targetTowerIndex >= towers.Count || targetTowerIndex < 0)
             {
                 continue;
             }
@@ -220,8 +235,17 @@ public class GameBoard : MonoBehaviour
     //remove from the current tower and move the coin to the new target tower.
     private void OnRingClicked(CoreGameMessage.RingClicked message)
     {
-        var ringSourceTower = towers[message.SourceTowerIndex];
+        Tower ringSourceTower;
         var ringCurrentTower = towers[message.CurrentTowerIndex];
+
+        if (message.SourceTowerIndex == -1)
+        {
+            ringSourceTower = _currentTurn == 0 ? whiteSpawnPoint : blackSpawnPoint;
+        }
+        else
+        {
+            ringSourceTower = towers[message.SourceTowerIndex];
+        }
         
         var topCoin = ringSourceTower.RemoveTopChecker();
         //check if the tower where we are moving the coin can be attacked.
@@ -253,6 +277,9 @@ public class GameBoard : MonoBehaviour
     //remove from the current tower and move the coin to the previous tower.
     private void OnResetPressed(CoreGameMessage.OnResetPressed message)
     {
+        //Check if there is anything available to reset.
+        if(_diceValuesUsed.Count == 0) return;
+        
         //Get the used values and put it to available dice values.
         _diceValues.AddRange(_diceValuesUsed);
         _diceValuesUsed.Clear();

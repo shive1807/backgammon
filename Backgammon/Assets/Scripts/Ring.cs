@@ -45,7 +45,12 @@ public class Ring : MonoBehaviour
         Debug.Log($"Ring {gameObject.name} was touched/clicked.");
         if (_shouldRegisterInput)
         {
-            MessageBus.Instance.Publish(new CoreGameMessage.RingClicked(_sourceTowerIndex, _currentTowerIndex));
+            // Create and execute move command instead of publishing message directly
+            var currentPlayer = GameServices.Instance.TurnManager.GetCurrentTurn;
+            var diceValue = Mathf.Abs(_sourceTowerIndex - _currentTowerIndex);
+            
+            var moveCommand = new MoveCoinCommand(_sourceTowerIndex, _currentTowerIndex, currentPlayer, diceValue);
+            CommandManager.Instance.ExecuteCommand(moveCommand);
         }
     }
 }

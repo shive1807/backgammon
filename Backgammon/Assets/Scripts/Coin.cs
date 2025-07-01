@@ -50,14 +50,46 @@ public class Coin : MonoBehaviour
         _prevTower    = -1;
         _ownerId      = ownerId;
         _currentTower = tower;
-        highlightRenderer.gameObject.SetActive(false);
         _type = ownerId == 0 ? CoinType.White : CoinType.Black;
         _state = CoinState.InGame;
+        highlightRenderer.gameObject.SetActive(false);
+    }
+    
+    /// <summary>
+    /// Updates the coin current tower.
+    /// </summary>
+    public void UpdateCoinTower(int targetTower, bool isMovedInCurrentTurn)
+    {
+        _prevTower    = _currentTower;
+        _currentTower = targetTower;
+        _isMovedInCurrentTurn = isMovedInCurrentTurn;
+    }
+
+    public void SetCoinState(CoinState newState)
+    {
+        if (_state == CoinState.AtSpawn)
+        {
+            _currentTower = -1;
+        }
+        _state = newState;
+    }
+    
+    public int GetPrevTower() => _prevTower;
+    public int GetCurrentTower() => _currentTower;
+    public int GetOwnerId() => _ownerId;
+    public CoinType GetCoinType() => _type;
+    
+    public bool GetIsMovedInCurrentTurn() => _isMovedInCurrentTurn;
+    
+    public void Highlight(bool show = true)
+    {
+        highlightRenderer.gameObject.SetActive(show);
     }
 
     private void OnSwitchTurn(CoreGameMessage.SwitchTurn message)
     {
         _prevTower = -1;
+        _isMovedInCurrentTurn = false;
     }
 
     private void Update()
@@ -99,33 +131,7 @@ public class Coin : MonoBehaviour
         Debug.Log($"Coin {gameObject.name} is currently on Tower: {_currentTower}");
     }
 
-    /// <summary>
-    /// Updates the coin current tower.
-    /// </summary>
-    public void UpdateCoinTower(int targetTower, bool isMovedInCurrentTurn)
-    {
-        _prevTower    = _currentTower;
-        _currentTower = targetTower;
-        _isMovedInCurrentTurn = isMovedInCurrentTurn;
-    }
-
-    public void SetCoinState(CoinState newState)
-    {
-        _state = newState;
-    }
     
-    public int GetPrevTower() => _prevTower;
-    public int GetCurrentTower() => _currentTower;
-    public int GetOwnerId() => _ownerId;
-    public CoinType GetCoinType() => _type;
-    
-    public bool GetIsMovedInCurrentTurn() => _isMovedInCurrentTurn;
-    
-    public void Highlight(bool show = true)
-    {
-        highlightRenderer.gameObject.SetActive(show);
-    }
-
     private void OnCheckerMoved(CoreGameMessage.OnCoinMoved message)
     {
         Highlight(false);

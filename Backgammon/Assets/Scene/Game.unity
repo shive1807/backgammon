@@ -804,6 +804,73 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f79b16cc21204942adba8e86e4f3a5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &251596458
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 251596461}
+  - component: {fileID: 251596460}
+  - component: {fileID: 251596459}
+  m_Layer: 0
+  m_Name: GameServices
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &251596459
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 251596458}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 186af311b73524e66a5d1a39d33b8462, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHistorySize: 50
+--- !u!114 &251596460
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 251596458}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8be9e3cb0c99e4fe28410d545cd98496, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameBoard: {fileID: 678470233}
+  turnManager: {fileID: 1006681796}
+  gameManager: {fileID: 1006681794}
+  commandManager: {fileID: 251596459}
+  whiteSpawnPoint: {fileID: 1172033285}
+  blackSpawnPoint: {fileID: 2058643261}
+  diceManagers:
+  - {fileID: 1430281200}
+  - {fileID: 645751584}
+--- !u!4 &251596461
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 251596458}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.3706512, y: 0.032697786, z: -0.031074023}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &259203940
 GameObject:
   m_ObjectHideFlags: 0
@@ -1332,7 +1399,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0.47258815, g: 0.4771325, b: 0.5660378, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -5398,6 +5465,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   doneButton: {fileID: 2051875510}
   resetButton: {fileID: 792062081}
+  undoButton: {fileID: 0}
+  redoButton: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -5408,3 +5477,4 @@ SceneRoots:
   - {fileID: 2064539460}
   - {fileID: 1353514088}
   - {fileID: 1006681793}
+  - {fileID: 251596461}

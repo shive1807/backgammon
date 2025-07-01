@@ -17,8 +17,8 @@ public class Tower : MonoBehaviour
 {
     // The index of this tower on the board (0 to 23)
     public int TowerIndex { get; private set; }
-    
-    public TowerType TowerType { get; private set; }
+
+    private TowerType TowerType { get; set; }
 
     // Stack to hold the checkers currently on this tower
     private Stack<Coin> Coins { get; set; } = new Stack<Coin>();
@@ -74,6 +74,7 @@ public class Tower : MonoBehaviour
         {
             OwnerPlayerId = playerId;
             TowerType = playerId == 0 ? TowerType.White : TowerType.Black;
+            Debug.Log($"Tower #{TowerType} has been initialized.");
         }
 
         coin.SetInitCoin(OwnerPlayerId, TowerIndex);
@@ -93,6 +94,11 @@ public class Tower : MonoBehaviour
         if (coin.GetOwnerId() != OwnerPlayerId)
         {
             
+        }
+
+        if (TowerType == TowerType.Empty)
+        {
+            TowerType = coin.GetCoinType() == CoinType.White ? TowerType.White : TowerType.Black;
         }
         
         Coins.Push(coin);
@@ -115,6 +121,8 @@ public class Tower : MonoBehaviour
 
     public void HighlightTopCoin()
     {
+        if (Coins.Count <= 0) return;
+        
         var coin = Coins.Peek();
         coin.Highlight();
     }

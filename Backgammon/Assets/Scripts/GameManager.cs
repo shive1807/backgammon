@@ -1,7 +1,5 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections;
 
 /// <summary>
 /// Enum representing the different phases of the game.
@@ -48,6 +46,26 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        // Wait for GameServices to be ready before starting
+        if (GameServices.Instance != null && GameServices.Instance.AreServicesReady())
+        {
+            TransitionToState(GameState.Setup);
+        }
+        else
+        {
+            // Delay start until GameServices is ready
+            StartCoroutine(WaitForServicesAndStart());
+        }
+    }
+    
+    private IEnumerator WaitForServicesAndStart()
+    {
+        // Wait until GameServices is available and ready
+        while (GameServices.Instance == null || !GameServices.Instance.AreServicesReady())
+        {
+            yield return null; // Wait one frame
+        }
+        
         TransitionToState(GameState.Setup);
     }
 
@@ -69,7 +87,7 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// Transitions the game to a new state and triggers any entry logic.
     /// </summary>
-    public void TransitionToState(GameState newState)
+    private void TransitionToState(GameState newState)
     {
         Debug.Log($"[GameManager] Transitioning from {CurrentState} to {newState}");
         CurrentState = newState;
@@ -81,7 +99,18 @@ public class GameManager : MonoBehaviour
                 break;
 
             case GameState.RollDice:
-                MessageBus.Instance.Publish(new CoreGameMessage.TurnDiceSetupAndRoll(_turnManager.GetCurrentTurn));
+                // Use command pattern for dice rolling with null checks
+                if (GameServices.Instance != null && GameServices.Instance.AreServicesReady() && CommandManager.Instance != null)
+                {
+                    var startTurnCommand = new StartTurnCommand(GameServices.Instance.TurnManager.GetCurrentTurn);
+                    CommandManager.Instance.ExecuteCommand(startTurnCommand);
+                }
+                else
+                {
+                    // Fallback to original approach if GameServices not ready
+                    Debug.LogWarning("GameServices not ready, falling back to direct message publishing");
+                    MessageBus.Instance.Publish(new CoreGameMessage.TurnDiceSetupAndRoll(_turnManager.GetCurrentTurn));
+                }
                 break;
 
             case GameState.PlayerMove:
