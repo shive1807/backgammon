@@ -6,6 +6,13 @@ public enum CoinType
     Black
 }
 
+public enum CoinState
+{
+    InGame,
+    AtSpawn,
+    OutOfGame,
+}
+
 /// <summary>
 /// Represents a Coin in the game that can be clicked by the player.
 /// </summary>
@@ -16,6 +23,7 @@ public class Coin : MonoBehaviour
     private int _ownerId;      // ID of the player who owns this coin
     private bool _isMovedInCurrentTurn;
     private CoinType _type;
+    private CoinState _state;
     
     [SerializeField]
     private SpriteRenderer highlightRenderer;
@@ -23,11 +31,13 @@ public class Coin : MonoBehaviour
     private void OnEnable()
     {
         MessageBus.Instance.Subscribe<CoreGameMessage.OnCoinMoved>(OnCheckerMoved);
+        MessageBus.Instance.Subscribe<CoreGameMessage.SwitchTurn>(OnSwitchTurn);
     }
 
     private void OnDisable()
     {
         MessageBus.Instance.Unsubscribe<CoreGameMessage.OnCoinMoved>(OnCheckerMoved);
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.SwitchTurn>(OnSwitchTurn);
     }
 
     /// <summary>
@@ -35,13 +45,19 @@ public class Coin : MonoBehaviour
     /// </summary>
     /// <param name="ownerId">The player ID who owns this coin.</param>
     /// <param name="tower">The ID or index of the tower this coin is on.</param>
-    public void SetCoin(int ownerId, int tower)
+    public void SetInitCoin(int ownerId, int tower)
     {
         _prevTower    = -1;
         _ownerId      = ownerId;
         _currentTower = tower;
         highlightRenderer.gameObject.SetActive(false);
         _type = ownerId == 0 ? CoinType.White : CoinType.Black;
+        _state = CoinState.InGame;
+    }
+
+    private void OnSwitchTurn(CoreGameMessage.SwitchTurn message)
+    {
+        _prevTower = -1;
     }
 
     private void Update()
@@ -92,11 +108,16 @@ public class Coin : MonoBehaviour
         _currentTower = targetTower;
         _isMovedInCurrentTurn = isMovedInCurrentTurn;
     }
+
+    public void SetCoinState(CoinState newState)
+    {
+        _state = newState;
+    }
     
     public int GetPrevTower() => _prevTower;
     public int GetCurrentTower() => _currentTower;
-    
     public int GetOwnerId() => _ownerId;
+    public CoinType GetCoinType() => _type;
     
     public bool GetIsMovedInCurrentTurn() => _isMovedInCurrentTurn;
     

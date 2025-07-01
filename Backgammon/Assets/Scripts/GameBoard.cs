@@ -48,6 +48,7 @@ public class GameBoard : MonoBehaviour
         MessageBus.Instance.Subscribe<CoreGameMessage.OnCoinMoved>(OnCheckerMoved);
         MessageBus.Instance.Subscribe<CoreGameMessage.OnResetPressed>(OnResetPressed);
         MessageBus.Instance.Subscribe<CoreGameMessage.OnDonePressed>(OnDonePressed);
+        MessageBus.Instance.Subscribe<CoreGameMessage.SwitchTurn>(OnSwitchTurn);
     }
 
     private void OnDisable()
@@ -60,6 +61,7 @@ public class GameBoard : MonoBehaviour
         MessageBus.Instance.Unsubscribe<CoreGameMessage.OnCoinMoved>(OnCheckerMoved);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.OnResetPressed>(OnResetPressed);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.OnDonePressed>(OnDonePressed);
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.SwitchTurn>(OnSwitchTurn);
     }
 
     private void AddWhiteCoins()
@@ -89,8 +91,13 @@ public class GameBoard : MonoBehaviour
         for (var i = 0; i < count; i++)
         {
             Debug.Log($"Adding coins to tower {towerIndex} with player {playerId}");
-            towers[towerIndex].AddChecker(playerId);
+            towers[towerIndex].AddInitCoins(playerId);
         }
+    }
+
+    private void OnSwitchTurn(CoreGameMessage.SwitchTurn message)
+    {
+        _diceValuesUsed.Clear();
     }
 
     private void OnDiceRolled(CoreGameMessage.DiceRolled message)
@@ -124,6 +131,22 @@ public class GameBoard : MonoBehaviour
     private int GetAvailableActions()
     {
         _availableActions = 0;
+        
+        //check if we have any pending actions to remove dead coin.
+        if (_currentTurn == 0)
+        {
+            if (whiteSpawnPoint.CoinsCount > 0)
+            {
+                
+            }
+        }
+        else
+        {
+            if (blackSpawnPoint.CoinsCount > 0)
+            {
+                
+            }
+        }
         
         foreach (var tower in towers)
         {
@@ -197,8 +220,32 @@ public class GameBoard : MonoBehaviour
     //remove from the current tower and move the coin to the new target tower.
     private void OnRingClicked(CoreGameMessage.RingClicked message)
     {
-        var topChecker = towers[message.SourceTowerIndex].RemoveTopChecker();
-        towers[message.CurrentTowerIndex].AddCoin(topChecker);
+        var ringSourceTower = towers[message.SourceTowerIndex];
+        var ringCurrentTower = towers[message.CurrentTowerIndex];
+        
+        var topCoin = ringSourceTower.RemoveTopChecker();
+        //check if the tower where we are moving the coin can be attacked.
+        //check if the tower has only one coin to be attacked.
+        if (ringCurrentTower.CanAttack())
+        {
+            //check if the coin we are moving and the tower are of opposite types.
+            if (topCoin.GetCoinType() == CoinType.White &&
+                ringCurrentTower.GetTowerType() == TowerType.Black)
+            {
+                var attackedCoin = ringCurrentTower.RemoveTopChecker();
+                blackSpawnPoint.AddCoin(attackedCoin);
+                attackedCoin.SetCoinState(CoinState.AtSpawn);
+            }
+            else if (topCoin.GetCoinType() == CoinType.Black &&
+                     ringCurrentTower.GetTowerType() == TowerType.White)
+            {
+                var attackedCoin = ringCurrentTower.RemoveTopChecker();
+                whiteSpawnPoint.AddCoin(attackedCoin);
+                attackedCoin.SetCoinState(CoinState.AtSpawn);
+            }
+        }
+        
+        ringCurrentTower.AddCoin(topCoin);
         MessageBus.Instance.Publish(new CoreGameMessage.CleanTowerRings());
         MessageBus.Instance.Publish(new CoreGameMessage.OnCoinMoved(Mathf.Abs(message.SourceTowerIndex - message.CurrentTowerIndex)));
     }

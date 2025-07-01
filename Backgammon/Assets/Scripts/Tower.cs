@@ -29,6 +29,8 @@ public class Tower : MonoBehaviour
     
     public int GetOwnerPlayerId() => OwnerPlayerId;
     
+    public TowerType GetTowerType() => TowerType;
+    
     // Offset applied for each additional checker (for stacking visuals)
     private const float CheckerOffsetY = 0.2f;
 
@@ -42,7 +44,6 @@ public class Tower : MonoBehaviour
         MessageBus.Instance.Unsubscribe<CoreGameMessage.CleanTowerRings>(OnCleanTowerRing);
     }
 
-
     /// <summary>
     /// Sets the tower's index (usually done at initialization time).
     /// </summary>
@@ -50,6 +51,7 @@ public class Tower : MonoBehaviour
     public void Initialize(int index)
     {
         TowerIndex = index;
+        TowerType  = TowerType.Empty;
     }
 
     /// <summary>
@@ -58,7 +60,7 @@ public class Tower : MonoBehaviour
     /// Prevents adding an opponent's checker if it's already owned.
     /// </summary>
     /// <param name="playerId">The ID of the player owning the checker.</param>
-    public void AddChecker(int playerId)
+    public void AddInitCoins(int playerId)
     {
         var coinObject = Instantiate(PrefabManager.Instance.GetPrefab(GameSettings.CoinPrefab), transform, true);
         var coin       = coinObject.GetComponent<Coin>();
@@ -71,19 +73,12 @@ public class Tower : MonoBehaviour
         if (Coins.Count == 0)
         {
             OwnerPlayerId = playerId;
-        }
-        
-        // Disallow placing opponent's checker if already owned
-        else if (OwnerPlayerId != playerId)
-        {
-            Debug.LogWarning("Attempted to add opponent's checker to this tower.");
-            return;
+            TowerType = playerId == 0 ? TowerType.White : TowerType.Black;
         }
 
-        coin.SetCoin(OwnerPlayerId, TowerIndex);
-        // Add to the checker stack
+        coin.SetInitCoin(OwnerPlayerId, TowerIndex);
+        // Add to the coin stack
         Coins.Push(coin);
-
 
         // Determine a stacking direction based on index
         var direction = TowerIndex <= 11 ? Vector3.up : Vector3.down;
@@ -180,7 +175,7 @@ public class Tower : MonoBehaviour
     /// <summary>
     /// Gets the number of checkers currently on the tower.
     /// </summary>
-    public int CheckerCount => Coins.Count;
+    public int CoinsCount => Coins.Count;
 
     /// <summary>
     /// Checks if the tower is currently owned by the given player.
