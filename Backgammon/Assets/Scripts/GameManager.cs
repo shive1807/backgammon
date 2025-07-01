@@ -51,52 +51,21 @@ public class GameManager : MonoBehaviour
         TransitionToState(GameState.Setup);
     }
 
-    private void Update()
-    {
-        HandleStateUpdate();
-    }
-
     private void OnEnable()
     {
-        MessageBus.Instance.Subscribe<CoreGameMessage.OnDonePressed>(OnDonePressed);
+        MessageBus.Instance.Subscribe<CoreGameMessage.TurnOver>(OnTurnOver);
     }
 
     private void OnDisable()
     {
-        MessageBus.Instance.Unsubscribe<CoreGameMessage.OnDonePressed>(OnDonePressed);
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.TurnOver>(OnTurnOver);
     }
 
-    private void OnDonePressed(CoreGameMessage.OnDonePressed message)
+    private void OnTurnOver(CoreGameMessage.TurnOver message)
     {
         TransitionToState(GameState.SwitchTurn);
     }
-
-    /// <summary>
-    /// Main state update handler called every frame.
-    /// </summary>
-    private void HandleStateUpdate()
-    {
-        switch (CurrentState)
-        {
-            case GameState.RollDice:
-                // Simulate dice roll on space key press (replace with UI input)
-                if (Input.GetKeyDown(KeyCode.Space))
-                {
-                    TransitionToState(GameState.PlayerMove);
-                }
-                break;
-
-            case GameState.PlayerMove:
-                // Await player interaction (e.g., selecting and moving a coin)
-                break;
-
-            case GameState.GameOver:
-                // Show Game Over UI or handle cleanup
-                Debug.Log("Game Over!");
-                break;
-        }
-    }
-
+    
     /// <summary>
     /// Transitions the game to a new state and triggers any entry logic.
     /// </summary>

@@ -91,6 +91,11 @@ public class CoreGameMessage
         }
     }
 
+    public class TurnOver : IMessage
+    {
+        
+    }
+
     public class OnDonePressed : IMessage
     {
         

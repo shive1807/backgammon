@@ -42,22 +42,24 @@ public class GameBoard : MonoBehaviour
     {
         MessageBus.Instance.Subscribe<CoreGameMessage.GameSetup>(OnGameSetup);
         MessageBus.Instance.Subscribe<CoreGameMessage.TurnDiceSetupAndRoll>(TurnDiceSetupAndRoll);
-        MessageBus.Instance.Subscribe<CoreGameMessage.DiceRolled>(OnDiceShuffled);
+        MessageBus.Instance.Subscribe<CoreGameMessage.DiceRolled>(OnDiceRolled);
         MessageBus.Instance.Subscribe<CoreGameMessage.CoinClicked>(OnCoinClicked);
         MessageBus.Instance.Subscribe<CoreGameMessage.RingClicked>(OnRingClicked);
         MessageBus.Instance.Subscribe<CoreGameMessage.OnCoinMoved>(OnCheckerMoved);
         MessageBus.Instance.Subscribe<CoreGameMessage.OnResetPressed>(OnResetPressed);
+        MessageBus.Instance.Subscribe<CoreGameMessage.OnDonePressed>(OnDonePressed);
     }
 
     private void OnDisable()
     {
         MessageBus.Instance.Unsubscribe<CoreGameMessage.GameSetup>(OnGameSetup);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.TurnDiceSetupAndRoll>(TurnDiceSetupAndRoll);
-        MessageBus.Instance.Unsubscribe<CoreGameMessage.DiceRolled>(OnDiceShuffled);
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.DiceRolled>(OnDiceRolled);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.CoinClicked>(OnCoinClicked);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.RingClicked>(OnRingClicked);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.OnCoinMoved>(OnCheckerMoved);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.OnResetPressed>(OnResetPressed);
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.OnDonePressed>(OnDonePressed);
     }
 
     private void AddWhiteCoins()
@@ -91,20 +93,35 @@ public class GameBoard : MonoBehaviour
         }
     }
 
-    private void OnDiceShuffled(CoreGameMessage.DiceRolled message)
+    private void OnDiceRolled(CoreGameMessage.DiceRolled message)
     {
         _diceValues = message.Dice;
+
+        if (GetAvailableActions() == 0)
+        {
+            MessageBus.Instance.Publish(new CoreGameMessage.TurnOver());
+        }
     }
 
-    private static IEnumerator DelaySwitchTurn()
+    private void OnDonePressed(CoreGameMessage.OnDonePressed message)
     {
-        yield return new WaitForSeconds(1f);
-        MessageBus.Instance.Publish(new CoreGameMessage.SwitchTurn());
+        //Check if no available dive moves left to play
+        if(_diceValues.Count == 0)
+        {
+            MessageBus.Instance.Publish(new CoreGameMessage.TurnOver());
+            return;
+        }
+        
+        //Check if no available actions left to play
+        if (GetAvailableActions() == 0)
+        {
+            MessageBus.Instance.Publish(new CoreGameMessage.TurnOver());
+            return;
+        }
     }
-
     
 
-    private int GetAvailableActions(List<int> diceValues)
+    private int GetAvailableActions()
     {
         _availableActions = 0;
         
@@ -112,7 +129,7 @@ public class GameBoard : MonoBehaviour
         {
             if (tower.IsOwnedBy(_currentTurn))
             {
-                foreach (var diceValue in diceValues)
+                foreach (var diceValue in _diceValues)
                 {
                     var targetValue = tower.TowerIndex;
 
