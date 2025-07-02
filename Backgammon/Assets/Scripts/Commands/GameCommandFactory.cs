@@ -109,6 +109,30 @@ public static class GameCommandFactory
         return new HidePossibleMovesCommand();
     }
     
+    /// <summary>
+    /// Create a command for highlighting coins that can be moved with available dice
+    /// </summary>
+    public static HighlightAvailableCoinsCommand CreateHighlightAvailableCoinsCommand(int playerId, List<int> diceValues)
+    {
+        return new HighlightAvailableCoinsCommand(playerId, diceValues);
+    }
+    
+    /// <summary>
+    /// Create a command for checking if turn should end
+    /// </summary>
+    public static CheckTurnEndCommand CreateCheckTurnEndCommand(int playerId, List<int> remainingDiceValues)
+    {
+        return new CheckTurnEndCommand(playerId, remainingDiceValues);
+    }
+    
+    /// <summary>
+    /// Create a command for initial game setup
+    /// </summary>
+    public static GameSetupCommand CreateGameSetupCommand()
+    {
+        return new GameSetupCommand();
+    }
+    
     // CreateUndoMultipleCommand removed - use CommandManager.UndoLastCommand() directly
     
     private static List<MoveCoinCommand> GeneratePossibleMoves(int playerId, List<int> diceValues)

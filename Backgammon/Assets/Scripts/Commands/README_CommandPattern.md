@@ -97,6 +97,22 @@ int movesCount = CommandManager.Instance.GetMovesInCurrentTurn();
 CommandManager.Instance.MarkTurnStart();
 ```
 
+### Game Flow Commands
+```csharp
+// Setup initial game state
+var setupCommand = GameCommandFactory.CreateGameSetupCommand();
+CommandManager.Instance.ExecuteCommand(setupCommand);
+
+// Highlight coins that can move with current dice
+var diceValues = new List<int> { 3, 5 };
+var highlightCommand = GameCommandFactory.CreateHighlightAvailableCoinsCommand(playerId, diceValues);
+CommandManager.Instance.ExecuteCommand(highlightCommand);
+
+// Check if turn should end
+var turnEndCommand = GameCommandFactory.CreateCheckTurnEndCommand(playerId, remainingDiceValues);
+CommandManager.Instance.ExecuteCommand(turnEndCommand);
+```
+
 ### AI Integration
 ```csharp
 // Generate AI command for current dice values
@@ -157,6 +173,24 @@ if (aiCommand != null)
 - Lightweight command for UI management
 - **Visual Command**: Not included in turn resets (IsGameStateCommand = false)
 
+### HighlightAvailableCoinsCommand
+- Highlights coins that can be moved with current dice values
+- Handles spawn point priority logic
+- Tracks highlighted coins for proper undo functionality
+- **Visual Command**: Not included in turn resets (IsGameStateCommand = false)
+
+### CheckTurnEndCommand
+- Checks if a turn should end based on remaining dice and available moves
+- Automatically triggers turn over when no moves are possible
+- Validates move availability using same logic as move commands
+- **Turn Management Command**: Not included in turn resets (IsGameStateCommand = false)
+
+### GameSetupCommand
+- Handles initial game setup including tower initialization and coin placement
+- Replaces direct GameBoard setup logic with command pattern
+- Sets up starting positions according to backgammon rules
+- **Setup Command**: Not included in turn resets (IsGameStateCommand = false)
+
 ### StartTurnCommand  
 - Combines dice rolling with turn setup
 - **Turn Setup Command**: Not included in turn resets (IsGameStateCommand = false)
@@ -186,11 +220,17 @@ Commands are classified into three categories for turn reset purposes:
 **Excluded from turn resets** - these only affect UI/display:
 - `ShowPossibleMovesCommand` - Displaying move indicators
 - `HidePossibleMovesCommand` - Hiding move indicators
+- `HighlightAvailableCoinsCommand` - Highlighting moveable coins
 
-### Turn Setup Commands (`IsGameStateCommand = false`)
-**Excluded from turn resets** - these initialize turn state:
+### Turn Management Commands (`IsGameStateCommand = false`)
+**Excluded from turn resets** - these handle turn flow and validation:
 - `StartTurnCommand` - Starting a player's turn
 - `RollDiceCommand` - Rolling dice and setting turn boundaries
+- `CheckTurnEndCommand` - Checking if turn should end
+
+### Setup Commands (`IsGameStateCommand = false`)
+**Excluded from turn resets** - these handle game initialization:
+- `GameSetupCommand` - Initial game setup and coin placement
 
 This classification ensures that turn resets only undo actual game moves, not UI state or turn initialization.
 
@@ -272,4 +312,27 @@ var moveCommand = new MoveCoinCommand(sourceIndex, targetIndex, playerId, diceVa
 CommandManager.Instance.ExecuteCommand(moveCommand);
 ```
 
-This new architecture provides a solid foundation for building complex game features while maintaining clean, testable, and performant code. 
+## Complete Command Pattern Integration
+
+The entire game flow is now managed through the command pattern:
+
+### What Was Converted:
+- **Game Setup**: `GameBoard.OnGameSetup()` → `GameSetupCommand`
+- **Coin Highlighting**: `GameBoard.GetAvailableActions()` → `HighlightAvailableCoinsCommand`
+- **Turn End Checking**: Direct logic in `OnDiceRolled`/`OnDonePressed` → `CheckTurnEndCommand`
+- **Ring Display**: Direct tower manipulation → `ShowPossibleMovesCommand`
+- **Move Execution**: Direct tower manipulation → `MoveCoinCommand`
+
+### Benefits of Full Command Integration:
+- **Consistent Architecture**: All game actions follow the same pattern
+- **Complete Undo Support**: Every action can be properly tracked and undone
+- **Better Testing**: Each piece of game logic can be tested independently
+- **Cleaner Code**: GameBoard is now much simpler and focused on message handling
+- **Extensibility**: Easy to add new game features following the same pattern
+
+### GameBoard Role Now:
+- **Message Router**: Receives game events and creates appropriate commands
+- **Data Holder**: Maintains current state (dice values, current turn)
+- **Command Orchestrator**: Executes commands through CommandManager
+
+This architecture provides a solid foundation for building complex game features while maintaining clean, testable, and performant code. 

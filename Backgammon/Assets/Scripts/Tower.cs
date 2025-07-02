@@ -117,6 +117,14 @@ public class Tower : MonoBehaviour
         coin.Highlight();
     }
     
+    /// <summary>
+    /// Get the top coin without removing it
+    /// </summary>
+    public Coin GetTopCoin()
+    {
+        return Coins.Count > 0 ? Coins.Peek() : null;
+    }
+    
     public void AddRing(int playerId, int sourceTowerIndex, int currentTowerIndex)
     {
         var ringObject = Instantiate(PrefabManager.Instance.GetPrefab(GameSettings.RingPrefab), transform, true);
