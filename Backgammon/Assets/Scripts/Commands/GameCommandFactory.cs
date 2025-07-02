@@ -93,21 +93,7 @@ public static class GameCommandFactory
         return randomMove;
     }
     
-    /// <summary>
-    /// Create undo command for the last N moves
-    /// </summary>
-    public static ICommand CreateUndoMultipleCommand(int moveCount)
-    {
-        var composite = new CompositeCommand($"Undo last {moveCount} moves");
-        
-        for (int i = 0; i < moveCount; i++)
-        {
-            // This would need a custom command that calls CommandManager.UndoLastCommand()
-            // For now, this is just a placeholder showing the concept
-        }
-        
-        return composite;
-    }
+    // CreateUndoMultipleCommand removed - use CommandManager.UndoLastCommand() directly
     
     private static List<MoveCoinCommand> GeneratePossibleMoves(int playerId, List<int> diceValues)
     {

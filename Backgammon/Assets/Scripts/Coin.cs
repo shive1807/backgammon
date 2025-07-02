@@ -21,7 +21,7 @@ public class Coin : MonoBehaviour
     private int _prevTower;
     private int _currentTower; // ID or index of the tower this coin is currently on
     private int _ownerId;      // ID of the player who owns this coin
-    private bool _isMovedInCurrentTurn;
+    // _isMovedInCurrentTurn removed - Command Pattern handles move tracking
     private CoinType _type;
     private CoinState _state;
     
@@ -62,7 +62,7 @@ public class Coin : MonoBehaviour
     {
         _prevTower    = _currentTower;
         _currentTower = targetTower;
-        _isMovedInCurrentTurn = isMovedInCurrentTurn;
+        // Move tracking removed - handled by Command Pattern
     }
 
     public void SetCoinState(CoinState newState)
@@ -79,7 +79,7 @@ public class Coin : MonoBehaviour
     public int GetOwnerId() => _ownerId;
     public CoinType GetCoinType() => _type;
     
-    public bool GetIsMovedInCurrentTurn() => _isMovedInCurrentTurn;
+    // GetIsMovedInCurrentTurn removed - Command Pattern handles move tracking
     
     public void Highlight(bool show = true)
     {
@@ -89,7 +89,7 @@ public class Coin : MonoBehaviour
     private void OnSwitchTurn(CoreGameMessage.SwitchTurn message)
     {
         _prevTower = -1;
-        _isMovedInCurrentTurn = false;
+        // Move tracking removed - handled by Command Pattern
     }
 
     private void Update()

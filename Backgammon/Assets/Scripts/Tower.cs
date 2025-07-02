@@ -91,13 +91,10 @@ public class Tower : MonoBehaviour
 
     public void AddCoin(Coin coin)
     {
-        if (coin.GetOwnerId() != OwnerPlayerId)
+        // Update tower ownership if empty or if this is the only coin
+        if (TowerType == TowerType.Empty || Coins.Count == 0)
         {
-            
-        }
-
-        if (TowerType == TowerType.Empty)
-        {
+            OwnerPlayerId = coin.GetOwnerId();
             TowerType = coin.GetCoinType() == CoinType.White ? TowerType.White : TowerType.Black;
         }
         
@@ -108,16 +105,9 @@ public class Tower : MonoBehaviour
         coin.UpdateCoinTower(TowerIndex, true);
     }
 
-    public void ResetCoin(Coin coin)
-    {
-        Coins.Push(coin);
-        var direction = TowerIndex <= 11 ? Vector3.up : Vector3.down;
-        var newPos = transform.position + direction * CheckerOffsetY * (Coins.Count - 1);
-        coin.gameObject.transform.position = newPos;
-        coin.UpdateCoinTower(TowerIndex, false);
-    }
+    // ResetCoin removed - Command Pattern handles undo functionality
 
-    public int GetListOfMovedCoins() => Coins.Count(coin => coin.GetIsMovedInCurrentTurn());
+    // GetListOfMovedCoins removed - Command Pattern handles move tracking
 
     public void HighlightTopCoin()
     {

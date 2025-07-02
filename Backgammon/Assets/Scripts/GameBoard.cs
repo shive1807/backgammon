@@ -13,7 +13,7 @@ public class GameBoard : MonoBehaviour
     
     private List<int> _diceValues;
 
-    private List<int> _diceValuesUsed;
+    // _diceValuesUsed removed - Command Pattern handles this
     
     [SerializeField]
     private Tower whiteSpawnPoint;
@@ -23,7 +23,6 @@ public class GameBoard : MonoBehaviour
     
     private void OnGameSetup(CoreGameMessage.GameSetup message)
     {
-        _diceValuesUsed   = new List<int>();
         _diceValues       = new List<int>();
         _availableActions = 0;
         //initialize tower index.
@@ -47,9 +46,7 @@ public class GameBoard : MonoBehaviour
         MessageBus.Instance.Subscribe<CoreGameMessage.TurnDiceSetupAndRoll>(TurnDiceSetupAndRoll);
         MessageBus.Instance.Subscribe<CoreGameMessage.DiceRolled>(OnDiceRolled);
         MessageBus.Instance.Subscribe<CoreGameMessage.CoinClicked>(OnCoinClicked);
-        MessageBus.Instance.Subscribe<CoreGameMessage.RingClicked>(OnRingClicked);
         MessageBus.Instance.Subscribe<CoreGameMessage.OnCoinMoved>(OnCheckerMoved);
-        MessageBus.Instance.Subscribe<CoreGameMessage.OnResetPressed>(OnResetPressed);
         MessageBus.Instance.Subscribe<CoreGameMessage.OnDonePressed>(OnDonePressed);
         MessageBus.Instance.Subscribe<CoreGameMessage.SwitchTurn>(OnSwitchTurn);
     }
@@ -60,9 +57,7 @@ public class GameBoard : MonoBehaviour
         MessageBus.Instance.Unsubscribe<CoreGameMessage.TurnDiceSetupAndRoll>(TurnDiceSetupAndRoll);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.DiceRolled>(OnDiceRolled);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.CoinClicked>(OnCoinClicked);
-        MessageBus.Instance.Unsubscribe<CoreGameMessage.RingClicked>(OnRingClicked);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.OnCoinMoved>(OnCheckerMoved);
-        MessageBus.Instance.Unsubscribe<CoreGameMessage.OnResetPressed>(OnResetPressed);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.OnDonePressed>(OnDonePressed);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.SwitchTurn>(OnSwitchTurn);
     }
@@ -93,21 +88,19 @@ public class GameBoard : MonoBehaviour
     {
         for (var i = 0; i < count; i++)
         {
-            Debug.Log($"Adding coins to tower {towerIndex} with player {playerId}");
             towers[towerIndex].AddInitCoins(playerId);
         }
     }
 
     private void OnSwitchTurn(CoreGameMessage.SwitchTurn message)
     {
-        _diceValuesUsed.Clear();
+        // Dice value tracking removed - handled by Command Pattern
     }
 
     private void OnDiceRolled(CoreGameMessage.DiceRolled message)
     {
         _diceValues  = message.Dice;
         _currentTurn = message.CurrentPlayerIndex;
-        Debug.Log($"Dice rolled {_diceValues}");
         if (GetAvailableActions() == 0)
         {
             MessageBus.Instance.Publish(new CoreGameMessage.TurnOver());
@@ -165,7 +158,6 @@ public class GameBoard : MonoBehaviour
         
         foreach (var tower in towers.Where(tower => tower.IsOwnedBy(_currentTurn)))
         {
-            Debug.Log("Current Tower Owned by " + tower.GetOwnerPlayerId());
             foreach (var diceValue in _diceValues)
             {
                 var targetValue = tower.TowerIndex;
@@ -194,26 +186,31 @@ public class GameBoard : MonoBehaviour
     //turn started and dice is rolled.
     private void TurnDiceSetupAndRoll(CoreGameMessage.TurnDiceSetupAndRoll message)
     {
-        Debug.Log($"Turn Dice Setup and Roll: {message.PlayerIndex}");
         _currentTurn = message.PlayerIndex;
     }
 
-    //listens to event raised by coin.
+    //listens to event raised by coin - creates rings for possible moves
     private void OnCoinClicked(CoreGameMessage.CoinClicked message)
     {
         MessageBus.Instance.Publish(new CoreGameMessage.CleanTowerRings());
 
         var diceValues = _diceValues;
-        var runOnce       = diceValues.Distinct().Count() != diceValues.Count();
+        var runOnce = diceValues.Distinct().Count() != diceValues.Count();
 
         foreach (var diceValue in diceValues)
         {
-            Debug.LogWarning(message.TowerIndex + ": " + diceValue + ", runOnce: " + runOnce);
-            var towerIndex       = message.TowerIndex;
+            var towerIndex = message.TowerIndex;
             var targetTowerIndex = towerIndex;
 
-            //for player 0 subtract and for player 1 add the dice values.
-            targetTowerIndex += GameManager.Instance.GetTurnManager().GetCurrentTurn == 0 ? -diceValue : diceValue;
+            // Calculate target position based on player direction
+            if (GameServices.Instance != null && GameServices.Instance.AreServicesReady())
+            {
+                targetTowerIndex += GameServices.Instance.TurnManager.GetCurrentTurn == 0 ? -diceValue : diceValue;
+            }
+            else
+            {
+                targetTowerIndex += _currentTurn == 0 ? -diceValue : diceValue;
+            }
             
             if (targetTowerIndex >= towers.Count || targetTowerIndex < 0)
             {
@@ -229,70 +226,8 @@ public class GameBoard : MonoBehaviour
     private void OnCheckerMoved(CoreGameMessage.OnCoinMoved message)
     {
         _diceValues.Remove(message.CheckerMovedByDiceValue);
-        _diceValuesUsed.Add(message.CheckerMovedByDiceValue);
+        // Dice tracking removed - handled by Command Pattern
     }
 
-    //remove from the current tower and move the coin to the new target tower.
-    private void OnRingClicked(CoreGameMessage.RingClicked message)
-    {
-        Tower ringSourceTower;
-        var ringCurrentTower = towers[message.CurrentTowerIndex];
-
-        if (message.SourceTowerIndex == -1)
-        {
-            ringSourceTower = _currentTurn == 0 ? whiteSpawnPoint : blackSpawnPoint;
-        }
-        else
-        {
-            ringSourceTower = towers[message.SourceTowerIndex];
-        }
-        
-        var topCoin = ringSourceTower.RemoveTopChecker();
-        //check if the tower where we are moving the coin can be attacked.
-        //check if the tower has only one coin to be attacked.
-        if (ringCurrentTower.CanAttack())
-        {
-            //check if the coin we are moving and the tower are of opposite types.
-            if (topCoin.GetCoinType() == CoinType.White &&
-                ringCurrentTower.GetTowerType() == TowerType.Black)
-            {
-                var attackedCoin = ringCurrentTower.RemoveTopChecker();
-                blackSpawnPoint.AddCoin(attackedCoin);
-                attackedCoin.SetCoinState(CoinState.AtSpawn);
-            }
-            else if (topCoin.GetCoinType() == CoinType.Black &&
-                     ringCurrentTower.GetTowerType() == TowerType.White)
-            {
-                var attackedCoin = ringCurrentTower.RemoveTopChecker();
-                whiteSpawnPoint.AddCoin(attackedCoin);
-                attackedCoin.SetCoinState(CoinState.AtSpawn);
-            }
-        }
-        
-        ringCurrentTower.AddCoin(topCoin);
-        MessageBus.Instance.Publish(new CoreGameMessage.CleanTowerRings());
-        MessageBus.Instance.Publish(new CoreGameMessage.OnCoinMoved(Mathf.Abs(message.SourceTowerIndex - message.CurrentTowerIndex)));
-    }
-    
-    //remove from the current tower and move the coin to the previous tower.
-    private void OnResetPressed(CoreGameMessage.OnResetPressed message)
-    {
-        //Check if there is anything available to reset.
-        if(_diceValuesUsed.Count == 0) return;
-        
-        //Get the used values and put it to available dice values.
-        _diceValues.AddRange(_diceValuesUsed);
-        _diceValuesUsed.Clear();
-        
-        //Call each tower to put back the newly moved coin if they have any.
-        foreach (var tower in towers)
-        {
-            var coinsToMove = tower.GetListOfMovedCoins();
-            for (var i = 0; i < coinsToMove; i++)
-            {
-                var coin = tower.RemoveTopChecker();
-                towers[coin.GetPrevTower()].ResetCoin(coin);
-            }
-        }
-    }
+    // OnRingClicked and OnResetPressed removed - now handled by Command Pattern
 }

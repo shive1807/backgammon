@@ -17,7 +17,8 @@ public class CanvasManager : MonoBehaviour
         
         resetButton.onClick.AddListener(() =>
         {
-            MessageBus.Instance.Publish(new CoreGameMessage.OnResetPressed());
+            // Now uses CommandManager undo instead of old reset system
+            CommandManager.Instance.UndoLastCommand();
         });
         
         // Add undo/redo functionality

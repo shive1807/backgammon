@@ -40,8 +40,6 @@ public class GameServices : MonoBehaviour
         }
         Instance = this;
         
-        Debug.Log("GameServices: Initializing...");
-        
         // Auto-find components if not assigned
         if (gameBoard == null)
             gameBoard = GetComponent<GameBoard>();
@@ -51,8 +49,6 @@ public class GameServices : MonoBehaviour
             gameManager = GetComponent<GameManager>();
         if (commandManager == null)
             commandManager = GetComponent<CommandManager>();
-            
-        Debug.Log("GameServices: Component auto-detection completed.");
     }
     
     private void Start()
@@ -62,8 +58,6 @@ public class GameServices : MonoBehaviour
     
     private void ValidateServices()
     {
-        Debug.Log("GameServices: Validating services...");
-        
         bool allValid = true;
         
         if (gameBoard == null)
@@ -97,11 +91,7 @@ public class GameServices : MonoBehaviour
             allValid = false;
         }
         
-        if (allValid)
-        {
-            Debug.Log("GameServices: All services validated successfully!");
-        }
-        else
+        if (!allValid)
         {
             Debug.LogError("GameServices: Some services are missing. Please check the inspector assignments.");
         }

@@ -15,17 +15,7 @@ public class CoreGameMessage
         }
     }
 
-    public class RingClicked : IMessage
-    {
-        public readonly int SourceTowerIndex;
-        public readonly int CurrentTowerIndex;
-
-        public RingClicked(int sourceTowerIndex, int currentTowerIndex)
-        {
-            SourceTowerIndex  = sourceTowerIndex;
-            CurrentTowerIndex  = currentTowerIndex;
-        }
-    }
+    // RingClicked removed - handled by Command Pattern
 
     public class OnCoinMoved : IMessage
     {
@@ -37,17 +27,7 @@ public class CoreGameMessage
         }
     }
 
-    public class PlayTurn : IMessage
-    {
-        public readonly int PlayerId;
-        public List<int> AvailableMoves;
-
-        public PlayTurn(int playerId, List<int> availableMoves)
-        {
-            PlayerId = playerId;
-            AvailableMoves = availableMoves;
-        }
-    }
+    // PlayTurn removed - not used in current implementation
     
     public class CleanTowerRings : IMessage
     {
@@ -101,8 +81,5 @@ public class CoreGameMessage
         
     }
 
-    public class OnResetPressed : IMessage
-    {
-        
-    }
+    // OnResetPressed removed - replaced by CommandManager undo functionality
 }

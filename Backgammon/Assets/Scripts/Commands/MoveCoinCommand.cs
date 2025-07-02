@@ -1,6 +1,5 @@
 using UnityEngine;
 using Commands;
-using System.Linq;
 
 /// <summary>
 /// Command for moving a coin from one tower to another
@@ -132,8 +131,8 @@ public class MoveCoinCommand : BaseCommand
                 }
             }
             
-            // Put moved coin back to source
-            _sourceTower.ResetCoin(_movedCoin);
+            // Put moved coin back to source tower
+            _sourceTower.AddCoin(_movedCoin);
             
             Debug.Log($"Undone move from tower {_sourceIndex} to tower {_targetIndex}");
             return true;
