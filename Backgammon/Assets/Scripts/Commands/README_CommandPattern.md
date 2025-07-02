@@ -38,9 +38,7 @@ GameServices GameObject:
 ### 3. UI Setup
 
 1. **Update CanvasManager:**
-   - Add Undo and Redo buttons to your UI
-   - Assign them to the CanvasManager's undoButton and redoButton fields
-   - The buttons will automatically enable/disable based on command availability
+   - The Reset button will automatically enable/disable based on whether there are moves to reset in the current turn
 
 ## Usage Examples
 
@@ -64,18 +62,7 @@ var multiMoveCommand = GameCommandFactory.CreateMultiMoveCommand(playerId, moves
 CommandManager.Instance.ExecuteCommand(multiMoveCommand);
 ```
 
-### Undo/Redo Operations
-```csharp
-// Undo last command
-bool undoSuccess = CommandManager.Instance.UndoLastCommand();
 
-// Redo last undone command  
-bool redoSuccess = CommandManager.Instance.RedoLastCommand();
-
-// Check if undo/redo is possible
-bool canUndo = CommandManager.Instance.CanUndo();
-bool canRedo = CommandManager.Instance.CanRedo();
-```
 
 ### Ring Display Commands
 ```csharp
@@ -92,6 +79,22 @@ var hideRingsCommand = GameCommandFactory.CreateHidePossibleMovesCommand();
 CommandManager.Instance.ExecuteCommand(hideRingsCommand);
 
 // The ring display is now integrated with coin clicks through GameBoard.OnCoinClicked
+```
+
+### Turn Reset Functionality
+```csharp
+// Reset all moves made in the current turn (what the Reset button does)
+// Only resets game state commands, ignores visual commands like ring displays
+bool success = CommandManager.Instance.UndoCurrentTurn();
+
+// Check if there are moves to reset in current turn
+bool canReset = CommandManager.Instance.CanResetCurrentTurn();
+
+// Get number of game state moves made in current turn (excludes visual commands)
+int movesCount = CommandManager.Instance.GetMovesInCurrentTurn();
+
+// Mark when a new turn starts (automatically called when dice are rolled)
+CommandManager.Instance.MarkTurnStart();
 ```
 
 ### AI Integration
@@ -111,10 +114,13 @@ if (aiCommand != null)
 - Better performance (no scene searching)
 - Cleaner, more predictable code
 
-### 2. Undo/Redo System
+### 2. Turn Reset System
 - Full command history tracking
 - Atomic operations (all-or-nothing execution)
 - UI automatically updates based on command state
+- **Turn Reset**: Reset button undoes all game state moves in current turn (since dice were rolled)
+- **Smart Command Filtering**: Visual commands (like ring displays) are excluded from turn resets
+- Smart button states: Reset button only enabled when there are actual moves to undo
 
 ### 3. Better Testing
 - Commands can be unit tested in isolation
@@ -143,17 +149,18 @@ if (aiCommand != null)
 - Calculates valid moves based on current dice values
 - Shows green/red rings based on move legality
 - Automatically clears previous rings before showing new ones
-- Can be undone to hide all rings
+- **Visual Command**: Not included in turn resets (IsGameStateCommand = false)
 
 ### HidePossibleMovesCommand
 - Hides all currently displayed possible move rings
 - Cleans up visual indicators
 - Lightweight command for UI management
-- Cannot be undone (no previous state to restore)
+- **Visual Command**: Not included in turn resets (IsGameStateCommand = false)
 
 ### StartTurnCommand  
 - Combines dice rolling with turn setup
-- Cannot be undone (as per game rules)
+- **Turn Setup Command**: Not included in turn resets (IsGameStateCommand = false)
+- Represents turn initialization, not moves within the turn
 
 ### CompositeCommand
 - Executes multiple commands as a transaction
@@ -163,7 +170,29 @@ if (aiCommand != null)
 ### RollDiceCommand
 - Handles dice rolling logic
 - Stores results for access
-- Typically not undoable
+- **Turn Setup Command**: Not included in turn resets (IsGameStateCommand = false)
+- Marks turn boundaries and initializes turn state
+
+## Command Classification System
+
+Commands are classified into three categories for turn reset purposes:
+
+### Game State Commands (`IsGameStateCommand = true`)
+**Included in turn resets** - these represent actual game moves:
+- `MoveCoinCommand` - Moving pieces on the board
+- `CompositeCommand` - Multiple game moves combined
+
+### Visual Commands (`IsGameStateCommand = false`)
+**Excluded from turn resets** - these only affect UI/display:
+- `ShowPossibleMovesCommand` - Displaying move indicators
+- `HidePossibleMovesCommand` - Hiding move indicators
+
+### Turn Setup Commands (`IsGameStateCommand = false`)
+**Excluded from turn resets** - these initialize turn state:
+- `StartTurnCommand` - Starting a player's turn
+- `RollDiceCommand` - Rolling dice and setting turn boundaries
+
+This classification ensures that turn resets only undo actual game moves, not UI state or turn initialization.
 
 ## Service Access Patterns
 
@@ -221,7 +250,7 @@ var ownedTowers = GameServices.Instance.GetTowersOwnedBy(playerId);
 4. **Subscribe to command events for UI updates:**
    ```csharp
    CommandManager.Instance.OnCommandExecuted += HandleCommandExecuted;
-   CommandManager.Instance.OnCanUndoChanged += UpdateUndoButton;
+   CommandManager.Instance.OnTurnStarted += HandleTurnStarted;
    ```
 
 ## Migration from Old Code

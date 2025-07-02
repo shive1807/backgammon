@@ -14,7 +14,7 @@ public class RollDiceCommand : BaseCommand
     public List<int> RolledValues => _rolledValues;
     
     public RollDiceCommand(int playerId) 
-        : base($"Roll dice for player {playerId}")
+        : base($"Roll dice for player {playerId}", false) // false = not included in turn resets
     {
         _playerId = playerId;
     }
@@ -63,6 +63,15 @@ public class RollDiceCommand : BaseCommand
             {
                 _rolledValues.Add(_rolledValues[0]);
                 _rolledValues.Add(_rolledValues[0]);
+            }
+            
+            // Clear any existing rings since new dice values mean new possible moves
+            MessageBus.Instance.Publish(new CoreGameMessage.CleanTowerRings());
+            
+            // Mark this as the start of a new turn for reset functionality
+            if (CommandManager.Instance != null)
+            {
+                CommandManager.Instance.MarkTurnStart();
             }
             
             // Publish the dice rolled message

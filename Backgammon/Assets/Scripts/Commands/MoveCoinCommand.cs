@@ -89,6 +89,9 @@ public class MoveCoinCommand : BaseCommand
             // Add coin to target tower
             _targetTower.AddCoin(_movedCoin);
             
+            // Hide all possible move rings since a move has been made
+            MessageBus.Instance.Publish(new CoreGameMessage.CleanTowerRings());
+            
             // Publish move completed message
             MessageBus.Instance.Publish(new CoreGameMessage.OnCoinMoved(_diceValue));
             
@@ -134,7 +137,7 @@ public class MoveCoinCommand : BaseCommand
             // Put moved coin back to source tower
             _sourceTower.AddCoin(_movedCoin);
             
-            Debug.Log($"Undone move from tower {_sourceIndex} to tower {_targetIndex}");
+            Debug.Log($"Undone move from tower {_sourceIndex} to tower {_targetIndex}. Click on a coin to see possible moves again.");
             return true;
         }
         catch (System.Exception e)

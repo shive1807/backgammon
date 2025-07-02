@@ -38,6 +38,12 @@ namespace Commands
         /// Timestamp when command was created
         /// </summary>
         DateTime CreatedAt { get; }
+        
+        /// <summary>
+        /// Whether this command affects game state (true) or is just visual (false)
+        /// Visual commands are not included in turn resets
+        /// </summary>
+        bool IsGameStateCommand { get; }
     }
     
     /// <summary>
@@ -47,11 +53,13 @@ namespace Commands
     {
         public string Description { get; protected set; }
         public DateTime CreatedAt { get; private set; }
+        public virtual bool IsGameStateCommand { get; protected set; } = true;
         
-        protected BaseCommand(string description)
+        protected BaseCommand(string description, bool isGameStateCommand = true)
         {
             Description = description;
             CreatedAt = DateTime.Now;
+            IsGameStateCommand = isGameStateCommand;
         }
         
         public abstract bool Execute();

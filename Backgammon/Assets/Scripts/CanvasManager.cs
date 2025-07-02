@@ -5,8 +5,6 @@ public class CanvasManager : MonoBehaviour
 { 
     [SerializeField] private Button doneButton;
     [SerializeField] private Button resetButton;
-    [SerializeField] private Button undoButton;
-    [SerializeField] private Button redoButton;
 
     private void Start()
     {
@@ -17,34 +15,25 @@ public class CanvasManager : MonoBehaviour
         
         resetButton.onClick.AddListener(() =>
         {
-            // Now uses CommandManager undo instead of old reset system
-            CommandManager.Instance.UndoLastCommand();
+            // Reset all moves made in the current turn
+            bool success = CommandManager.Instance.UndoCurrentTurn();
+            if (!success)
+            {
+                Debug.Log("No moves to reset in current turn");
+            }
         });
         
-        // Add undo/redo functionality
-        if (undoButton != null)
-        {
-            undoButton.onClick.AddListener(() =>
-            {
-                CommandManager.Instance.UndoLastCommand();
-            });
-        }
-        
-        if (redoButton != null)
-        {
-            redoButton.onClick.AddListener(() =>
-            {
-                CommandManager.Instance.RedoLastCommand();
-            });
-        }
+        // Set initial button states
+        UpdateResetButton();
     }
     
     private void OnEnable()
     {
         if (CommandManager.Instance != null)
         {
-            CommandManager.Instance.OnCanUndoChanged += UpdateUndoButton;
-            CommandManager.Instance.OnCanRedoChanged += UpdateRedoButton;
+            CommandManager.Instance.OnCommandExecuted += OnCommandExecuted;
+            CommandManager.Instance.OnCommandUndone += OnCommandUndone;
+            CommandManager.Instance.OnTurnStarted += OnTurnStarted;
         }
     }
     
@@ -52,20 +41,32 @@ public class CanvasManager : MonoBehaviour
     {
         if (CommandManager.Instance != null)
         {
-            CommandManager.Instance.OnCanUndoChanged -= UpdateUndoButton;
-            CommandManager.Instance.OnCanRedoChanged -= UpdateRedoButton;
+            CommandManager.Instance.OnCommandExecuted -= OnCommandExecuted;
+            CommandManager.Instance.OnCommandUndone -= OnCommandUndone;
+            CommandManager.Instance.OnTurnStarted -= OnTurnStarted;
         }
     }
     
-    private void UpdateUndoButton(bool canUndo)
+    private void OnCommandExecuted(Commands.ICommand command)
     {
-        if (undoButton != null)
-            undoButton.interactable = canUndo;
+        UpdateResetButton();
     }
     
-    private void UpdateRedoButton(bool canRedo)
+    private void OnCommandUndone(Commands.ICommand command)
     {
-        if (redoButton != null)
-            redoButton.interactable = canRedo;
+        UpdateResetButton();
+    }
+    
+    private void OnTurnStarted()
+    {
+        UpdateResetButton();
+    }
+    
+    private void UpdateResetButton()
+    {
+        if (resetButton != null && CommandManager.Instance != null)
+        {
+            resetButton.interactable = CommandManager.Instance.CanResetCurrentTurn();
+        }
     }
 }

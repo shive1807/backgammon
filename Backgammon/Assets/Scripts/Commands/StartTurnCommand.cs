@@ -11,7 +11,7 @@ public class StartTurnCommand : BaseCommand
     private RollDiceCommand _diceCommand;
     
     public StartTurnCommand(int playerId) 
-        : base($"Start turn for player {playerId}")
+        : base($"Start turn for player {playerId}", false) // false = not included in turn resets
     {
         _playerId = playerId;
     }

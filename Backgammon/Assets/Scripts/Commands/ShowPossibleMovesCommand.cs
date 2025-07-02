@@ -19,7 +19,7 @@ namespace Commands
     private bool _ringsCurrentlyShown;
     
     public ShowPossibleMovesCommand(int sourceTowerIndex, int playerId, List<int> diceValues)
-        : base($"Show possible moves from tower {sourceTowerIndex} for player {playerId}")
+        : base($"Show possible moves from tower {sourceTowerIndex} for player {playerId}", false) // false = visual command, not game state
     {
         _sourceTowerIndex = sourceTowerIndex;
         _playerId = playerId;
@@ -185,7 +185,7 @@ namespace Commands
 /// </summary>
 public class HidePossibleMovesCommand : BaseCommand
 {
-    public HidePossibleMovesCommand() : base("Hide all possible move rings")
+    public HidePossibleMovesCommand() : base("Hide all possible move rings", false) // false = visual command, not game state
     {
     }
     

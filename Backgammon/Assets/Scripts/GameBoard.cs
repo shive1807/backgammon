@@ -128,6 +128,7 @@ public class GameBoard : MonoBehaviour
     private int GetAvailableActions()
     {
         _availableActions = 0;
+        var highlightedTowers = new HashSet<Tower>(); // Track highlighted towers to avoid duplicates
         
         //check if we have any pending actions to remove dead coin.
         if (_currentTurn == 0)
@@ -158,6 +159,8 @@ public class GameBoard : MonoBehaviour
         
         foreach (var tower in towers.Where(tower => tower.IsOwnedBy(_currentTurn)))
         {
+            bool canMoveWithAnyDice = false;
+            
             foreach (var diceValue in _diceValues)
             {
                 var targetValue = tower.TowerIndex;
@@ -170,15 +173,23 @@ public class GameBoard : MonoBehaviour
                 {
                     targetValue += diceValue;
                 }
-                if (targetValue > towers.Count || targetValue < 0)
+                
+                if (targetValue >= 0 && targetValue < towers.Count)
                 {
-                    continue;
+                    canMoveWithAnyDice = true;
+                    _availableActions++;
                 }
-                    
+            }
+            
+            // Only highlight each tower once, even if it can move with multiple dice
+            if (canMoveWithAnyDice && !highlightedTowers.Contains(tower))
+            {
                 tower.HighlightTopCoin();
-                _availableActions++;
+                highlightedTowers.Add(tower);
             }
         }
+        
+        Debug.Log($"Highlighted {highlightedTowers.Count} towers with {_availableActions} available actions for player {_currentTurn}");
         return _availableActions;
     }
 
@@ -223,7 +234,19 @@ public class GameBoard : MonoBehaviour
     private void OnCheckerMoved(CoreGameMessage.OnCoinMoved message)
     {
         _diceValues.Remove(message.CheckerMovedByDiceValue);
-        // Dice tracking removed - handled by Command Pattern
+        
+        // Re-highlight coins that can be moved with remaining dice values
+        if (_diceValues.Count > 0)
+        {
+            Debug.Log($"Re-highlighting coins for remaining dice: [{string.Join(", ", _diceValues)}]");
+            GetAvailableActions();
+        }
+        else
+        {
+            // No more dice values, turn is over
+            Debug.Log("All dice values used, ending turn");
+            MessageBus.Instance.Publish(new CoreGameMessage.TurnOver());
+        }
     }
 
     // OnRingClicked and OnResetPressed removed - now handled by Command Pattern
