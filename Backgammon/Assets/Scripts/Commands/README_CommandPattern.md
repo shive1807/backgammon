@@ -77,6 +77,23 @@ bool canUndo = CommandManager.Instance.CanUndo();
 bool canRedo = CommandManager.Instance.CanRedo();
 ```
 
+### Ring Display Commands
+```csharp
+// Show possible moves for a coin
+var diceValues = new List<int> { 3, 5 };
+var showMovesCommand = GameCommandFactory.CreateShowPossibleMovesCommand(
+    sourceTowerIndex: 0, 
+    playerId: 0, 
+    diceValues: diceValues);
+CommandManager.Instance.ExecuteCommand(showMovesCommand);
+
+// Hide all rings
+var hideRingsCommand = GameCommandFactory.CreateHidePossibleMovesCommand();
+CommandManager.Instance.ExecuteCommand(hideRingsCommand);
+
+// The ring display is now integrated with coin clicks through GameBoard.OnCoinClicked
+```
+
 ### AI Integration
 ```csharp
 // Generate AI command for current dice values
@@ -120,6 +137,19 @@ if (aiCommand != null)
 - Handles coin movement between towers
 - Supports attack logic
 - Full undo capability
+
+### ShowPossibleMovesCommand
+- Displays rings indicating possible moves for a selected coin
+- Calculates valid moves based on current dice values
+- Shows green/red rings based on move legality
+- Automatically clears previous rings before showing new ones
+- Can be undone to hide all rings
+
+### HidePossibleMovesCommand
+- Hides all currently displayed possible move rings
+- Cleans up visual indicators
+- Lightweight command for UI management
+- Cannot be undone (no previous state to restore)
 
 ### StartTurnCommand  
 - Combines dice rolling with turn setup

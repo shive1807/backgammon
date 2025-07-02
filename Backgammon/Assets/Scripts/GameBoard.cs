@@ -189,37 +189,34 @@ public class GameBoard : MonoBehaviour
         _currentTurn = message.PlayerIndex;
     }
 
-    //listens to event raised by coin - creates rings for possible moves
+    //listens to event raised by coin - creates rings for possible moves using command pattern
     private void OnCoinClicked(CoreGameMessage.CoinClicked message)
     {
-        MessageBus.Instance.Publish(new CoreGameMessage.CleanTowerRings());
-
-        var diceValues = _diceValues;
-        var runOnce = diceValues.Distinct().Count() != diceValues.Count();
-
-        foreach (var diceValue in diceValues)
+        // Get current player ID - use services if available, fallback to local _currentTurn
+        var currentPlayerId = GameServices.Instance != null && GameServices.Instance.AreServicesReady() 
+            ? GameServices.Instance.TurnManager.GetCurrentTurn 
+            : _currentTurn;
+            
+        // Only show moves for coins owned by the current player
+        if (message.OwnerId != currentPlayerId)
         {
-            var towerIndex = message.TowerIndex;
-            var targetTowerIndex = towerIndex;
-
-            // Calculate target position based on player direction
-            if (GameServices.Instance != null && GameServices.Instance.AreServicesReady())
-            {
-                targetTowerIndex += GameServices.Instance.TurnManager.GetCurrentTurn == 0 ? -diceValue : diceValue;
-            }
-            else
-            {
-                targetTowerIndex += _currentTurn == 0 ? -diceValue : diceValue;
-            }
+            Debug.Log($"Cannot show moves for coin owned by player {message.OwnerId} when it's player {currentPlayerId}'s turn");
+            return;
+        }
+        
+        // Create and execute the show possible moves command
+        var showMovesCommand = GameCommandFactory.CreateShowPossibleMovesCommand(
+            message.TowerIndex, 
+            message.OwnerId, 
+            _diceValues);
             
-            if (targetTowerIndex >= towers.Count || targetTowerIndex < 0)
-            {
-                continue;
-            }
-            
-            towers[targetTowerIndex].AddRing(message.OwnerId, towerIndex, targetTowerIndex);
-
-            if (runOnce) return;
+        if (showMovesCommand != null && showMovesCommand.CanExecute())
+        {
+            CommandManager.Instance.ExecuteCommand(showMovesCommand);
+        }
+        else
+        {
+            Debug.Log($"Cannot show possible moves from tower {message.TowerIndex} for player {message.OwnerId}");
         }
     }
     

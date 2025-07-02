@@ -93,6 +93,22 @@ public static class GameCommandFactory
         return randomMove;
     }
     
+    /// <summary>
+    /// Create a command for showing possible moves from a source tower
+    /// </summary>
+    public static ShowPossibleMovesCommand CreateShowPossibleMovesCommand(int sourceTowerIndex, int playerId, List<int> diceValues)
+    {
+        return new ShowPossibleMovesCommand(sourceTowerIndex, playerId, diceValues);
+    }
+    
+    /// <summary>
+    /// Create a command for hiding all possible move rings
+    /// </summary>
+    public static HidePossibleMovesCommand CreateHidePossibleMovesCommand()
+    {
+        return new HidePossibleMovesCommand();
+    }
+    
     // CreateUndoMultipleCommand removed - use CommandManager.UndoLastCommand() directly
     
     private static List<MoveCoinCommand> GeneratePossibleMoves(int playerId, List<int> diceValues)
