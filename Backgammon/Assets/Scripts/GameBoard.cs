@@ -23,7 +23,7 @@ public class GameBoard : MonoBehaviour
     {
         _diceValues = new List<int>();
         
-        // Use command pattern for game setup
+        // Use a command pattern for game setup
         var setupCommand = GameCommandFactory.CreateGameSetupCommand();
         if (setupCommand != null && setupCommand.CanExecute())
         {
