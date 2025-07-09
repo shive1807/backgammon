@@ -10,7 +10,6 @@ public class Dice : MonoBehaviour
     public int Roll()
     {
         int number = Random.Range(1, 7); // 1 to 6
-        Debug.Log("Rolled: " + number);
         ShowDots(number);
         return number;
     }
