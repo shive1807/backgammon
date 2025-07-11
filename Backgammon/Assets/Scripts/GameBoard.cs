@@ -10,6 +10,14 @@ public class GameBoard : MonoBehaviour
     private int _currentTurn;
     
     private List<int> _diceValues;
+    
+    /// <summary>
+    /// Get remaining dice values for UI and validation purposes
+    /// </summary>
+    public List<int> GetRemainingDiceValues()
+    {
+        return _diceValues ?? new List<int>();
+    }
 
     // _diceValuesUsed removed - Command Pattern handles this
     
@@ -76,21 +84,21 @@ public class GameBoard : MonoBehaviour
             CommandManager.Instance.ExecuteCommand(highlightCommand);
         }
         
-        // Use command pattern to check if turn should end
-        var turnEndCheckCommand = GameCommandFactory.CreateCheckTurnEndCommand(_currentTurn, _diceValues);
-        if (turnEndCheckCommand != null && turnEndCheckCommand.CanExecute())
-        {
-            CommandManager.Instance.ExecuteCommand(turnEndCheckCommand);
-        }
+        // Remove automatic turn end checking - let player decide when to end turn
+        // Turn will only end when Done button is pressed
     }
 
     private void OnDonePressed(CoreGameMessage.OnDonePressed message)
     {
-        // Use command pattern to check if turn should end
-        var turnEndCheckCommand = GameCommandFactory.CreateCheckTurnEndCommand(_currentTurn, _diceValues);
-        if (turnEndCheckCommand != null && turnEndCheckCommand.CanExecute())
+        // Use command pattern to validate and end the turn only if legal
+        var manualTurnEndCommand = GameCommandFactory.CreateManualTurnEndCommand(_currentTurn, _diceValues);
+        if (manualTurnEndCommand != null && manualTurnEndCommand.CanExecute())
         {
-            CommandManager.Instance.ExecuteCommand(turnEndCheckCommand);
+            bool success = CommandManager.Instance.ExecuteCommand(manualTurnEndCommand);
+            if (!success)
+            {
+                Debug.Log($"Player {_currentTurn} cannot end turn yet - must use all available dice moves");
+            }
         }
     }
     
@@ -150,13 +158,15 @@ public class GameBoard : MonoBehaviour
                 CommandManager.Instance.ExecuteCommand(highlightCommand);
             }
         }
-        
-        // Use command pattern to check if turn should end
-        var turnEndCheckCommand = GameCommandFactory.CreateCheckTurnEndCommand(_currentTurn, _diceValues);
-        if (turnEndCheckCommand != null && turnEndCheckCommand.CanExecute())
+        else
         {
-            CommandManager.Instance.ExecuteCommand(turnEndCheckCommand);
+            // All dice used - remove highlights but don't end turn automatically
+            // Player must press Done to end turn
+            Debug.Log("All dice values used. Player can press Done to end turn.");
         }
+        
+        // Remove automatic turn end checking - let player decide when to end turn
+        // Turn will only end when Done button is pressed
     }
 
     // OnRingClicked and OnResetPressed removed - now handled by Command Pattern

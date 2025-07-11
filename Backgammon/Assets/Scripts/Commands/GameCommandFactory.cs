@@ -120,9 +120,17 @@ public static class GameCommandFactory
     /// <summary>
     /// Create a command for checking if turn should end
     /// </summary>
-    public static CheckTurnEndCommand CreateCheckTurnEndCommand(int playerId, List<int> remainingDiceValues)
+    public static CheckTurnEndCommand CreateCheckTurnEndCommand(int playerId, List<int> remainingDiceValues, bool isManualTurnEnd = false)
     {
-        return new CheckTurnEndCommand(playerId, remainingDiceValues);
+        return new CheckTurnEndCommand(playerId, remainingDiceValues, isManualTurnEnd);
+    }
+    
+    /// <summary>
+    /// Create a command for manually ending a turn (when Done button is pressed)
+    /// </summary>
+    public static CheckTurnEndCommand CreateManualTurnEndCommand(int playerId, List<int> remainingDiceValues)
+    {
+        return new CheckTurnEndCommand(playerId, remainingDiceValues, true);
     }
     
     /// <summary>

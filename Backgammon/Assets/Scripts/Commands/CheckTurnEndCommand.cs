@@ -5,17 +5,20 @@ using System.Linq;
 
 /// <summary>
 /// Command for checking if a turn should end and triggering turn over if needed
+/// Now supports manual turn ending when player presses Done button
 /// </summary>
 public class CheckTurnEndCommand : BaseCommand
 {
     private readonly int _playerId;
     private readonly List<int> _remainingDiceValues;
+    private readonly bool _isManualTurnEnd;
     
-    public CheckTurnEndCommand(int playerId, List<int> remainingDiceValues)
-        : base($"Check turn end for player {playerId}", false) // false = turn management, not game state move
+    public CheckTurnEndCommand(int playerId, List<int> remainingDiceValues, bool isManualTurnEnd = false)
+        : base($"Check turn end for player {playerId}" + (isManualTurnEnd ? " (manual)" : ""), false) // false = turn management, not game state move
     {
         _playerId = playerId;
         _remainingDiceValues = new List<int>(remainingDiceValues ?? new List<int>());
+        _isManualTurnEnd = isManualTurnEnd;
     }
     
     public override bool CanExecute()
@@ -28,6 +31,32 @@ public class CheckTurnEndCommand : BaseCommand
     {
         try
         {
+            // If this is a manual turn end (Done button pressed), validate it's legal
+            if (_isManualTurnEnd)
+            {
+                // Check if no dice values left
+                if (_remainingDiceValues.Count == 0)
+                {
+                    Debug.Log($"Turn ended manually for player {_playerId}: All dice used");
+                    MessageBus.Instance.Publish(new CoreGameMessage.TurnOver());
+                    return true;
+                }
+                
+                // Check if no valid moves available with remaining dice
+                int manualAvailableActions = CountAvailableActions();
+                if (manualAvailableActions == 0)
+                {
+                    Debug.Log($"Turn ended manually for player {_playerId}: No valid moves available with dice [{string.Join(", ", _remainingDiceValues)}]");
+                    MessageBus.Instance.Publish(new CoreGameMessage.TurnOver());
+                    return true;
+                }
+                
+                // If there are valid moves remaining, don't allow manual turn end
+                Debug.Log($"Cannot end turn manually for player {_playerId}: {manualAvailableActions} valid moves available with dice [{string.Join(", ", _remainingDiceValues)}]");
+                return false;
+            }
+            
+            // For automatic checking (if still used elsewhere), keep original logic
             // Check if no dice values left
             if (_remainingDiceValues.Count == 0)
             {
