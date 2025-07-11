@@ -178,6 +178,73 @@ public class Tower : MonoBehaviour
 
         return topChecker;
     }
+    
+    /// <summary>
+    /// Removes a specific coin from this tower (needed for undo functionality with attacks).
+    /// Rebuilds the stack without the specified coin.
+    /// </summary>
+    /// <param name="coinToRemove">The specific coin to remove</param>
+    /// <returns>True if the coin was found and removed, false otherwise</returns>
+    public bool RemoveSpecificCoin(Coin coinToRemove)
+    {
+        if (Coins.Count == 0 || coinToRemove == null)
+            return false;
+            
+        // Convert stack to list for easier manipulation
+        var coinList = new List<Coin>(Coins);
+        
+        // Find the coin to remove
+        bool found = false;
+        for (int i = 0; i < coinList.Count; i++)
+        {
+            if (coinList[i] == coinToRemove)
+            {
+                coinList.RemoveAt(i);
+                found = true;
+                break;
+            }
+        }
+        
+        if (!found)
+            return false;
+            
+        // Rebuild the stack without the removed coin
+        Coins.Clear();
+        
+        // Add coins back in reverse order to maintain stack structure
+        for (int i = coinList.Count - 1; i >= 0; i--)
+        {
+            Coins.Push(coinList[i]);
+        }
+        
+        // Update positions for remaining coins
+        UpdateCoinPositions();
+        
+        // Reset ownership if the tower is now empty
+        if (Coins.Count == 0)
+        {
+            OwnerPlayerId = -1;
+            TowerType = TowerType.Empty;
+        }
+        
+        return true;
+    }
+    
+    /// <summary>
+    /// Updates the visual positions of all coins in the tower
+    /// </summary>
+    private void UpdateCoinPositions()
+    {
+        var coinArray = Coins.ToArray();
+        var direction = TowerIndex <= 11 ? Vector3.up : Vector3.down;
+        
+        for (int i = 0; i < coinArray.Length; i++)
+        {
+            var coin = coinArray[coinArray.Length - 1 - i]; // Reverse order since stack is LIFO
+            var newPos = transform.position + direction * CheckerOffsetY * i;
+            coin.gameObject.transform.position = newPos;
+        }
+    }
     /// <summary>
     /// Gets the number of checkers currently on the tower.
     /// </summary>

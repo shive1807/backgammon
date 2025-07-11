@@ -80,6 +80,18 @@ public class CoreGameMessage
     {
         
     }
+    
+    public class DiceValueRestored : IMessage
+    {
+        public readonly int RestoredDiceValue;
+        public readonly int CurrentPlayerIndex;
+        
+        public DiceValueRestored(int restoredDiceValue, int currentPlayerIndex)
+        {
+            RestoredDiceValue = restoredDiceValue;
+            CurrentPlayerIndex = currentPlayerIndex;
+        }
+    }
 
     // OnResetPressed removed - replaced by CommandManager undo functionality
 }

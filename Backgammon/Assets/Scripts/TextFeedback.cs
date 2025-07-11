@@ -15,6 +15,7 @@ public class TextFeedback : MonoBehaviour
         MessageBus.Instance.Subscribe<CoreGameMessage.DiceRolled>(OnDiceRolled);
         MessageBus.Instance.Subscribe<CoreGameMessage.OnCoinMoved>(OnCoinMoved);
         MessageBus.Instance.Subscribe<CoreGameMessage.SwitchTurn>(OnSwitchTurn);
+        MessageBus.Instance.Subscribe<CoreGameMessage.DiceValueRestored>(OnDiceValueRestored);
     }
     
     private void OnDisable()
@@ -23,6 +24,7 @@ public class TextFeedback : MonoBehaviour
         MessageBus.Instance.Unsubscribe<CoreGameMessage.DiceRolled>(OnDiceRolled);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.OnCoinMoved>(OnCoinMoved);
         MessageBus.Instance.Unsubscribe<CoreGameMessage.SwitchTurn>(OnSwitchTurn);
+        MessageBus.Instance.Unsubscribe<CoreGameMessage.DiceValueRestored>(OnDiceValueRestored);
     }
 
     private void ResetText()
@@ -64,6 +66,19 @@ public class TextFeedback : MonoBehaviour
     private void OnSwitchTurn(CoreGameMessage.SwitchTurn message)
     {
         ResetText();
+    }
+    
+    private void OnDiceValueRestored(CoreGameMessage.DiceValueRestored message)
+    {
+        // Update feedback when dice values are restored (e.g., after undo)
+        var remainingDice = GetRemainingDiceValues();
+        
+        if (remainingDice.Count > 0)
+        {
+            string playerName = message.CurrentPlayerIndex == 0 ? "White" : "Black";
+            string diceText = string.Join(", ", remainingDice);
+            _feedbackText.text = $"{playerName} dice restored: {diceText}\nMust use all dice values";
+        }
     }
     
     private System.Collections.Generic.List<int> GetRemainingDiceValues()

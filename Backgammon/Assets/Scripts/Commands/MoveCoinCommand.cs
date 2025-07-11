@@ -125,19 +125,36 @@ public class MoveCoinCommand : BaseCommand
             // If there was an attack, restore the attacked coin
             if (_wasAttack && _attackedCoin != null && _spawnTower != null)
             {
-                // Remove from spawn and put back to target
-                var coinFromSpawn = _spawnTower.RemoveTopChecker();
-                if (coinFromSpawn == _attackedCoin)
+                // Verify the attacked coin is actually in the spawn tower
+                if (_attackedCoin.GetCurrentTower() != -1 && _attackedCoin.GetCurrentTower() != _spawnTower.TowerIndex)
+                {
+                    Debug.LogError($"Undo failed: Attacked coin is not in expected spawn tower. Expected: {_spawnTower.TowerIndex}, Found: {_attackedCoin.GetCurrentTower()}");
+                    return false;
+                }
+                
+                // Remove the specific attacked coin from spawn and put back to target
+                bool removed = _spawnTower.RemoveSpecificCoin(_attackedCoin);
+                if (removed)
                 {
                     _targetTower.AddCoin(_attackedCoin);
                     _attackedCoin.SetCoinState(CoinState.InGame);
+                    Debug.Log($"Restored attacked coin (Player {_attackedCoin.GetOwnerId()}) to tower {_targetIndex}");
+                }
+                else
+                {
+                    Debug.LogError($"Failed to find and remove attacked coin from spawn tower during undo. Spawn tower has {_spawnTower.CoinsCount} coins.");
+                    return false;
                 }
             }
             
             // Put moved coin back to source tower
             _sourceTower.AddCoin(_movedCoin);
             
-            Debug.Log($"Undone move from tower {_sourceIndex} to tower {_targetIndex}. Click on a coin to see possible moves again.");
+            // Restore the dice value that was used for this move
+            // We need to publish a message to restore the dice value to the GameBoard
+            RestoreDiceValue();
+            
+            Debug.Log($"Undone move from tower {_sourceIndex} to tower {_targetIndex}. Dice value {_diceValue} restored. Click on a coin to see possible moves again.");
             return true;
         }
         catch (System.Exception e)
@@ -162,6 +179,25 @@ public class MoveCoinCommand : BaseCommand
             return true;
             
         return false;
+    }
+    
+    /// <summary>
+    /// Restores the dice value that was used for this move
+    /// </summary>
+    private void RestoreDiceValue()
+    {
+        if (GameServices.Instance?.GameBoard != null)
+        {
+            // Add the dice value back to the GameBoard's dice list
+            var remainingDice = GameServices.Instance.GameBoard.GetRemainingDiceValues();
+            remainingDice.Add(_diceValue);
+            
+            // Publish message to notify other components about dice restoration
+            var currentPlayer = GameServices.Instance.TurnManager.GetCurrentTurn;
+            MessageBus.Instance.Publish(new CoreGameMessage.DiceValueRestored(_diceValue, currentPlayer));
+            
+            Debug.Log($"Restored dice value {_diceValue} to available dice. Total dice: [{string.Join(", ", remainingDice)}]");
+        }
     }
     
     // These methods are no longer needed since we use GameServices
