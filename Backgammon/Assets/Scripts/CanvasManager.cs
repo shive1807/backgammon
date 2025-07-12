@@ -4,20 +4,56 @@ using System.Linq;
 
 public class CanvasManager : MonoBehaviour
 { 
-    [SerializeField] private Button doneButton;
-    [SerializeField] private Button resetButton;
+    [Header("Legacy Buttons (will be replaced)")]
+    [SerializeField] private Button legacyDoneButton;
+    [SerializeField] private Button legacyResetButton;
+    
+    [Header("Generic Buttons")]
+    [SerializeField] private GenericButton doneButton;
+    [SerializeField] private GenericButton resetButton;
+    
+    [Header("Button Theme")]
+    [SerializeField] private ButtonTheme buttonTheme;
 
     private void Start()
     {
-        doneButton.onClick.AddListener(() =>
+        SetupButtons();
+        UpdateButtons();
+    }
+    
+    private void SetupButtons()
+    {
+        // If using new generic buttons
+        if (doneButton != null && resetButton != null)
+        {
+            SetupGenericButtons();
+        }
+        // Fallback to legacy buttons
+        else if (legacyDoneButton != null && legacyResetButton != null)
+        {
+            SetupLegacyButtons();
+        }
+        else
+        {
+            // Create buttons programmatically if none assigned
+            CreateButtonsProgrammatically();
+        }
+    }
+    
+    private void SetupGenericButtons()
+    {
+        // Configure Done button
+        ButtonFactory.ConfigureForBackgammon(doneButton, ButtonFactory.BackgammonButtonType.Done);
+        doneButton.AddClickListener(() =>
         {
             Debug.Log("Done button pressed - attempting to end turn");
             MessageBus.Instance.Publish(new CoreGameMessage.OnDonePressed());
         });
         
-        resetButton.onClick.AddListener(() =>
+        // Configure Reset button
+        ButtonFactory.ConfigureForBackgammon(resetButton, ButtonFactory.BackgammonButtonType.Reset);
+        resetButton.AddClickListener(() =>
         {
-            // Reset all moves made in the current turn
             bool success = CommandManager.Instance.UndoCurrentTurn();
             if (!success)
             {
@@ -25,8 +61,70 @@ public class CanvasManager : MonoBehaviour
             }
         });
         
-        // Set initial button states
-        UpdateButtons();
+        // Apply theme if available
+        if (buttonTheme != null)
+        {
+            buttonTheme.ApplyToButton(doneButton);
+            buttonTheme.ApplyToButton(resetButton);
+        }
+    }
+    
+    private void SetupLegacyButtons()
+    {
+        legacyDoneButton.onClick.AddListener(() =>
+        {
+            Debug.Log("Done button pressed - attempting to end turn");
+            MessageBus.Instance.Publish(new CoreGameMessage.OnDonePressed());
+        });
+        
+        legacyResetButton.onClick.AddListener(() =>
+        {
+            bool success = CommandManager.Instance.UndoCurrentTurn();
+            if (!success)
+            {
+                Debug.Log("No moves to reset in current turn");
+            }
+        });
+    }
+    
+    private void CreateButtonsProgrammatically()
+    {
+        // Find a canvas to parent the buttons to
+        var canvas = FindObjectOfType<Canvas>();
+        if (canvas == null) return;
+        
+        // Create Done button
+        doneButton = ButtonFactory.CreateSuccessButton(
+            canvas.transform, 
+            "Done", 
+            new Vector2(100f, -50f), 
+            new Vector2(120f, 48f)
+        );
+        ButtonFactory.ConfigureForBackgammon(doneButton, ButtonFactory.BackgammonButtonType.Done);
+        doneButton.AddClickListener(() =>
+        {
+            Debug.Log("Done button pressed - attempting to end turn");
+            MessageBus.Instance.Publish(new CoreGameMessage.OnDonePressed());
+        });
+        
+        // Create Reset button
+        resetButton = ButtonFactory.CreateWarningButton(
+            canvas.transform, 
+            "Reset", 
+            new Vector2(-100f, -50f), 
+            new Vector2(120f, 48f)
+        );
+        ButtonFactory.ConfigureForBackgammon(resetButton, ButtonFactory.BackgammonButtonType.Reset);
+        resetButton.AddClickListener(() =>
+        {
+            bool success = CommandManager.Instance.UndoCurrentTurn();
+            if (!success)
+            {
+                Debug.Log("No moves to reset in current turn");
+            }
+        });
+        
+        Debug.Log("Created buttons programmatically");
     }
     
     private void OnEnable()
@@ -87,14 +185,23 @@ public class CanvasManager : MonoBehaviour
         // Update Reset button - only enable if there are moves to reset
         if (resetButton != null && CommandManager.Instance != null)
         {
-            resetButton.interactable = CommandManager.Instance.CanResetCurrentTurn();
+            bool canReset = CommandManager.Instance.CanResetCurrentTurn();
+            resetButton.SetInteractable(canReset);
+        }
+        else if (legacyResetButton != null && CommandManager.Instance != null)
+        {
+            legacyResetButton.interactable = CommandManager.Instance.CanResetCurrentTurn();
         }
         
         // Done button should only be enabled when all dice are used OR no valid moves are available
+        bool canEndTurn = CanEndTurn();
         if (doneButton != null)
         {
-            bool canEndTurn = CanEndTurn();
-            doneButton.interactable = canEndTurn;
+            doneButton.SetInteractable(canEndTurn);
+        }
+        else if (legacyDoneButton != null)
+        {
+            legacyDoneButton.interactable = canEndTurn;
         }
     }
     
