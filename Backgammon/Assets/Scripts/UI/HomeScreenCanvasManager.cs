@@ -129,10 +129,20 @@ public class HomeScreenCanvasManager : MonoBehaviour
     
     private IEnumerator WaitForServices()
     {
-        // Wait for essential services
-        while (PlayerDataManager.Instance == null)
+        // Wait for essential services with timeout
+        float timeout = 5f; // 5 second timeout
+        float elapsedTime = 0f;
+        
+        while (PlayerDataManager.Instance == null && elapsedTime < timeout)
         {
+            elapsedTime += Time.deltaTime;
             yield return null;
+        }
+        
+        // If PlayerDataManager still null after timeout, log warning but continue
+        if (PlayerDataManager.Instance == null)
+        {
+            Debug.LogWarning("PlayerDataManager not found after timeout. Some features may not work correctly.");
         }
         
         // Wait a frame to ensure everything is properly initialized
