@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78eb6ff1ac4c44d68b2057d851c978e3, type: 3}
+  m_Name: UiCatalog
+  m_EditorClassIdentifier: 
+  HomeScreen:
+    AssetReference:
+      m_AssetGUID: 237dc7d86973a48b5975f8c9af347a2d
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    UiType: 0
+    FillType: 0
+    HideType: 0
+  GameScreen:
+    AssetReference:
+      m_AssetGUID: f4678e7ffa6154f55a1bdb4efb3a1d1d
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    UiType: 0
+    FillType: 0
+    HideType: 0
