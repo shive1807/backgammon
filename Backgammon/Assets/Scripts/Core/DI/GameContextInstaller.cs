@@ -193,9 +193,8 @@ namespace Core.DI
         
         private void InstallFactories(DIContainer container)
         {
-            // Game Command Factory - Creates game commands
-            container.Bind<GameCommandFactory>().AsSingle();
-            Debug.Log("[GameContextInstaller] Registered GameCommandFactory");
+            // Game Command Factory - Static class, no registration needed
+            Debug.Log("[GameContextInstaller] GameCommandFactory is static, no registration needed");
             
             // Dice Manager Factory - Creates dice managers for players
             container.BindFactory<DiceManager[]>(container => 
