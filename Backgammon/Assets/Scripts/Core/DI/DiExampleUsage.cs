@@ -9,7 +9,7 @@ namespace Core.DI
     /// Example MonoBehaviour demonstrating dependency injection usage.
     /// Shows how to use the [Inject] attribute to get services from the DI container.
     /// </summary>
-    public class DIExampleUsage : MonoBehaviour
+    public class DiExampleUsage : MonoBehaviour
     {
         [Header("Injected Services")]
         [Inject] private GameManager gameManager;
@@ -175,7 +175,7 @@ namespace Core.DI
         {
             // Create a new GameObject
             var newObj = new GameObject("Dynamic Object");
-            var newComponent = newObj.AddComponent<DIExampleUsage>();
+            var newComponent = newObj.AddComponent<DiExampleUsage>();
             
             // Inject dependencies into the new component
             MonoInjectHelper.InjectIntoObject(newComponent);

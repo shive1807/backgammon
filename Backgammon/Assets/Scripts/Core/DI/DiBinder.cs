@@ -5,38 +5,37 @@ using UnityEngine;
 
 namespace Core.DI
 {
-    // ReSharper disable once InconsistentNaming
-    public class DIBinder<T>
+    public class DiBinder<T>
     {
         private readonly DiContainer _container;
         private DiContainer.BindingScope _scope = DiContainer.BindingScope.Transient;
 
-        internal DIBinder(DiContainer container)
+        internal DiBinder(DiContainer container)
         {
             this._container = container;
         }
 
         // Basic bindings first
-        public DIBinder<T> To<TImpl>() where TImpl : class, T
+        public DiBinder<T> To<TImpl>() where TImpl : class, T
         {
             _container.RegisterBinding<T>(typeof(TImpl), _scope);
             return this;
         }
 
-        public DIBinder<T> FromInstance(T instance)
+        public DiBinder<T> FromInstance(T instance)
         {
             _container.BindInstance(instance);
             return this;
         }
 
-        public DIBinder<T> FromMethod(Func<DiContainer, T> factory)
+        public DiBinder<T> FromMethod(Func<DiContainer, T> factory)
         {
             _container.RegisterFactory<T>(c => factory(c), _scope);
             return this;
         }
 
         // Test this one first
-        public DIBinder<T> TestMethod()
+        public DiBinder<T> TestMethod()
         {
             // Just to test if T is recognized
             var typeName = typeof(T).Name;
@@ -44,13 +43,13 @@ namespace Core.DI
             return this;
         }
 
-        public DIBinder<T> AsSingle()
+        public DiBinder<T> AsSingle()
         {
             _scope = DiContainer.BindingScope.Singleton;
             return this;
         }
 
-        public DIBinder<T> AsTransient()
+        public DiBinder<T> AsTransient()
         {
             _scope = DiContainer.BindingScope.Transient;
             return this;

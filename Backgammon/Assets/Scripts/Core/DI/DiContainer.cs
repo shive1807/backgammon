@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using UnityEngine;
 //Di container core.
 namespace Core.DI
 {
@@ -23,9 +22,9 @@ namespace Core.DI
         }
 
         // Bind interface to implementation
-        public DIBinder<T> Bind<T>()
+        public DiBinder<T> Bind<T>()
         {
-            return new DIBinder<T>(this);
+            return new DiBinder<T>(this);
         }
 
         // Bind to a constant instance
