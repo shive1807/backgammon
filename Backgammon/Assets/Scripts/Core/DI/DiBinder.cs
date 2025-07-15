@@ -60,5 +60,92 @@ namespace Core.DI
             _container.MarkAsNonLazy<T>();
             return this;
         }
+
+        /// <summary>
+        /// Creates a GameObject with the class name, adds the component, and binds it as singleton.
+        /// Only works with MonoBehaviour-derived classes.
+        /// </summary>
+        public DiBinder<T> FromNewGameObject()
+        {
+            // Check if T is assignable from MonoBehaviour
+            if (!typeof(UnityEngine.MonoBehaviour).IsAssignableFrom(typeof(T)))
+            {
+                throw new System.ArgumentException($"Type {typeof(T).Name} must inherit from MonoBehaviour to use FromNewGameObject()");
+            }
+            
+            // Create GameObject with class name
+            string gameObjectName = typeof(T).Name;
+            var gameObject = new UnityEngine.GameObject(gameObjectName);
+            
+            // Add component to GameObject using reflection
+            var component = (T)(object)gameObject.AddComponent(typeof(T));
+            
+            // Mark as DontDestroyOnLoad for persistence
+            UnityEngine.Object.DontDestroyOnLoad(gameObject);
+            
+            // Bind the component instance
+            _container.BindInstance(component);
+            
+            UnityEngine.Debug.Log($"[DIBinder] Created GameObject '{gameObjectName}' with component {typeof(T).Name}");
+            
+            return this;
+        }
+
+        /// <summary>
+        /// Creates a GameObject with custom name, adds the component, and binds it as singleton.
+        /// Only works with MonoBehaviour-derived classes.
+        /// </summary>
+        public DiBinder<T> FromNewGameObject(string customName)
+        {
+            // Check if T is assignable from MonoBehaviour
+            if (!typeof(UnityEngine.MonoBehaviour).IsAssignableFrom(typeof(T)))
+            {
+                throw new System.ArgumentException($"Type {typeof(T).Name} must inherit from MonoBehaviour to use FromNewGameObject()");
+            }
+            
+            // Create GameObject with custom name
+            var gameObject = new UnityEngine.GameObject(customName);
+            
+            // Add component to GameObject using reflection
+            var component = (T)(object)gameObject.AddComponent(typeof(T));
+            
+            // Mark as DontDestroyOnLoad for persistence
+            UnityEngine.Object.DontDestroyOnLoad(gameObject);
+            
+            // Bind the component instance
+            _container.BindInstance(component);
+            
+            UnityEngine.Debug.Log($"[DIBinder] Created GameObject '{customName}' with component {typeof(T).Name}");
+            
+            return this;
+        }
+
+        /// <summary>
+        /// Creates a GameObject as child of specified parent, adds the component, and binds it.
+        /// Only works with MonoBehaviour-derived classes.
+        /// </summary>
+        public DiBinder<T> FromNewGameObject(UnityEngine.Transform parent)
+        {
+            // Check if T is assignable from MonoBehaviour
+            if (!typeof(UnityEngine.MonoBehaviour).IsAssignableFrom(typeof(T)))
+            {
+                throw new System.ArgumentException($"Type {typeof(T).Name} must inherit from MonoBehaviour to use FromNewGameObject()");
+            }
+            
+            // Create GameObject with class name as child of parent
+            string gameObjectName = typeof(T).Name;
+            var gameObject = new UnityEngine.GameObject(gameObjectName);
+            gameObject.transform.SetParent(parent);
+            
+            // Add component to GameObject using reflection
+            var component = (T)(object)gameObject.AddComponent(typeof(T));
+            
+            // Bind the component instance
+            _container.BindInstance(component);
+            
+            UnityEngine.Debug.Log($"[DIBinder] Created GameObject '{gameObjectName}' under parent '{parent.name}' with component {typeof(T).Name}");
+            
+            return this;
+        }
     }
 }

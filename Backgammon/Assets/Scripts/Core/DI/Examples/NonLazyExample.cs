@@ -1,5 +1,6 @@
 using UnityEngine;
 using Core.DI;
+using Core.GameAudio;
 
 namespace Core.DI
 {
