@@ -13,6 +13,7 @@ namespace Core.DI
         private readonly Dictionary<Type, Func<DiContainer, object>> _factoryBindings    = new();
         private readonly Dictionary<Type, BindingScope>              _bindingScopes      = new();
         private readonly HashSet<Type>                               _currentlyResolving = new();
+        private readonly HashSet<Type>                               _nonLazyBindings    = new();
 
         public enum BindingScope
         {
@@ -34,11 +35,12 @@ namespace Core.DI
             _bindingScopes[typeof(T)] = BindingScope.Singleton;
         }
 
-        // Bind to a factory method
-        public void BindFactory<T>(Func<DiContainer, T> factory)
+        // Bind to a factory method with fluent API
+        public DiBinder<T> BindFactory<T>(Func<DiContainer, T> factory)
         {
             _factoryBindings[typeof(T)] = container => factory(container);
             _bindingScopes[typeof(T)] = BindingScope.Transient;
+            return new DiBinder<T>(this);
         }
 
         // Internal binding registration
@@ -52,6 +54,33 @@ namespace Core.DI
         {
             _factoryBindings[typeof(T)] = factory;
             _bindingScopes[typeof(T)] = scope;
+        }
+
+        // Mark a binding as non-lazy (eager initialization)
+        internal void MarkAsNonLazy<T>()
+        {
+            _nonLazyBindings.Add(typeof(T));
+        }
+
+        // Resolve all non-lazy bindings immediately
+        public void ResolveNonLazyBindings()
+        {
+            UnityEngine.Debug.Log($"[DIContainer] Resolving {_nonLazyBindings.Count} non-lazy bindings...");
+            
+            foreach (Type type in _nonLazyBindings)
+            {
+                try
+                {
+                    Resolve(type);
+                    UnityEngine.Debug.Log($"[DIContainer] Non-lazy resolved: {type.Name}");
+                }
+                catch (Exception e)
+                {
+                    UnityEngine.Debug.LogError($"[DIContainer] Failed to resolve non-lazy binding for {type.Name}: {e.Message}");
+                }
+            }
+            
+            UnityEngine.Debug.Log("[DIContainer] Non-lazy binding resolution completed.");
         }
 
         // Resolve dependencies

@@ -61,6 +61,9 @@ namespace Core.Context
                 installer.InstallBindings(projectContainer);
             }
 
+            // Resolve all non-lazy bindings immediately
+            projectContainer.ResolveNonLazyBindings();
+
             Debug.Log("ProjectContext initialized with DI Container");
         }
 

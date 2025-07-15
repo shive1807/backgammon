@@ -54,5 +54,11 @@ namespace Core.DI
             _scope = DiContainer.BindingScope.Transient;
             return this;
         }
+
+        public DiBinder<T> NonLazy()
+        {
+            _container.MarkAsNonLazy<T>();
+            return this;
+        }
     }
 }
