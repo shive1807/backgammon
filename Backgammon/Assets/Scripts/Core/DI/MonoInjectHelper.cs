@@ -7,7 +7,7 @@ namespace Core.DI
 {
     public static class MonoInjectHelper
     {
-        public static void InjectIntoGameObject(GameObject target, DIContainer container = null)
+        public static void InjectIntoGameObject(GameObject target, DiContainer container = null)
         {
             container ??= ProjectContext.Container;
             
@@ -18,7 +18,7 @@ namespace Core.DI
             }
         }
 
-        public static void InjectIntoObject(object target, DIContainer container = null)
+        public static void InjectIntoObject(object target, DiContainer container = null)
         {
             container ??= ProjectContext.Container;
             

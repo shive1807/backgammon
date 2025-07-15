@@ -12,7 +12,7 @@ namespace Core.UiSystems
         public event Action<UiViewDefinition, UiCanvasLayerDefinition> UiClosed = delegate { };
         public event Action OpacityUpdated = delegate { };
         
-        private DIContainer diContainer;
+        private DiContainer diContainer;
 
         private Canvas canvas;
         private CanvasScaler canvasScaler;
@@ -37,7 +37,7 @@ namespace Core.UiSystems
             // loadedUiPresenter.Clear();
         }
         
-        public void Init(UiCanvasLayerDefinition uiCanvasLayerDefinition, DIContainer diContainer, Camera uiCamera)
+        public void Init(UiCanvasLayerDefinition uiCanvasLayerDefinition, DiContainer diContainer, Camera uiCamera)
         {
             UiCanvasLayerDefinition = uiCanvasLayerDefinition;
             this.diContainer = diContainer;

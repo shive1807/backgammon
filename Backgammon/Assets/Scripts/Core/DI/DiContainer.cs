@@ -6,12 +6,12 @@ using UnityEngine;
 namespace Core.DI
 {
     // ReSharper disable once InconsistentNaming
-    public class DIContainer : IDisposable
+    public class DiContainer : IDisposable
     {
         private readonly Dictionary<Type, object>                    _singletonInstances = new();
         private readonly Dictionary<Type, Type>                      _typeBindings       = new();
         private readonly Dictionary<Type, object>                    _constantBindings   = new();
-        private readonly Dictionary<Type, Func<DIContainer, object>> _factoryBindings    = new();
+        private readonly Dictionary<Type, Func<DiContainer, object>> _factoryBindings    = new();
         private readonly Dictionary<Type, BindingScope>              _bindingScopes      = new();
         private readonly HashSet<Type>                               _currentlyResolving = new();
 
@@ -36,7 +36,7 @@ namespace Core.DI
         }
 
         // Bind to a factory method
-        public void BindFactory<T>(Func<DIContainer, T> factory)
+        public void BindFactory<T>(Func<DiContainer, T> factory)
         {
             _factoryBindings[typeof(T)] = container => factory(container);
             _bindingScopes[typeof(T)] = BindingScope.Transient;
@@ -49,7 +49,7 @@ namespace Core.DI
             _bindingScopes[typeof(T)] = scope;
         }
 
-        internal void RegisterFactory<T>(Func<DIContainer, object> factory, BindingScope scope)
+        internal void RegisterFactory<T>(Func<DiContainer, object> factory, BindingScope scope)
         {
             _factoryBindings[typeof(T)] = factory;
             _bindingScopes[typeof(T)] = scope;
@@ -97,7 +97,7 @@ namespace Core.DI
             }
 
             // 3. Check for factory bindings
-            if (_factoryBindings.TryGetValue(type, out Func<DIContainer, object> factory))
+            if (_factoryBindings.TryGetValue(type, out Func<DiContainer, object> factory))
             {
                 object instance = factory(this);
                 if (scope == BindingScope.Singleton)

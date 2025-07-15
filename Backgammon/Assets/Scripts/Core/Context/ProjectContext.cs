@@ -9,9 +9,9 @@ namespace Core.Context
         [SerializeField] private List<MonoInstaller> installers = new();
         
         private static ProjectContext instance;
-        private static DIContainer projectContainer;
+        private static DiContainer projectContainer;
 
-        public static DIContainer Container
+        public static DiContainer Container
         {
             get
             {
@@ -50,7 +50,7 @@ namespace Core.Context
 
         private void Initialize()
         {
-            projectContainer = new DIContainer();
+            projectContainer = new DiContainer();
             
             // Install default bindings
             InstallDefaultBindings();
@@ -67,7 +67,7 @@ namespace Core.Context
         private void InstallDefaultBindings()
         {
             // Bind the container itself
-            projectContainer.BindInstance<DIContainer>(projectContainer);
+            projectContainer.BindInstance<DiContainer>(projectContainer);
         }
 
         private void OnDestroy()

@@ -32,7 +32,7 @@ namespace Core.DI
         [Header("Auto-Find Services")]
         [SerializeField] private bool autoFindServices = true;
         
-        public override void InstallBindings(DIContainer container)
+        public override void InstallBindings(DiContainer container)
         {
             Debug.Log("[GameContextInstaller] Installing game bindings...");
             
@@ -88,7 +88,7 @@ namespace Core.DI
                 canvasManager = FindObjectOfType<CanvasManager>();
         }
         
-        private void InstallCoreServices(DIContainer container)
+        private void InstallCoreServices(DiContainer container)
         {
             // Game Manager - Core game state management
             if (gameManager != null)
@@ -124,7 +124,7 @@ namespace Core.DI
             }
         }
         
-        private void InstallManagers(DIContainer container)
+        private void InstallManagers(DiContainer container)
         {
             // Command Manager - Command pattern implementation
             if (commandManager != null)
@@ -171,7 +171,7 @@ namespace Core.DI
             }
         }
         
-        private void InstallSingletons(DIContainer container)
+        private void InstallSingletons(DiContainer container)
         {
             // Audio Manager - Audio system
             if (audioManager != null)
@@ -193,7 +193,7 @@ namespace Core.DI
             }
         }
         
-        private void InstallFactories(DIContainer container)
+        private void InstallFactories(DiContainer container)
         {
             // Game Command Factory - Static class, no registration needed
             Debug.Log("[GameContextInstaller] GameCommandFactory is static, no registration needed");
@@ -207,7 +207,7 @@ namespace Core.DI
             Debug.Log("[GameContextInstaller] Registered DiceManager factory");
         }
         
-        private void InstallMessageBus(DIContainer container)
+        private void InstallMessageBus(DiContainer container)
         {
             // Message Bus - Event system
             container.Bind<MessageBus>().FromInstance(MessageBus.Instance);

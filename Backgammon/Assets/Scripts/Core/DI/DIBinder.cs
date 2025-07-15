@@ -8,10 +8,10 @@ namespace Core.DI
     // ReSharper disable once InconsistentNaming
     public class DIBinder<T>
     {
-        private readonly DIContainer _container;
-        private DIContainer.BindingScope _scope = DIContainer.BindingScope.Transient;
+        private readonly DiContainer _container;
+        private DiContainer.BindingScope _scope = DiContainer.BindingScope.Transient;
 
-        internal DIBinder(DIContainer container)
+        internal DIBinder(DiContainer container)
         {
             this._container = container;
         }
@@ -29,7 +29,7 @@ namespace Core.DI
             return this;
         }
 
-        public DIBinder<T> FromMethod(Func<DIContainer, T> factory)
+        public DIBinder<T> FromMethod(Func<DiContainer, T> factory)
         {
             _container.RegisterFactory<T>(c => factory(c), _scope);
             return this;
@@ -46,13 +46,13 @@ namespace Core.DI
 
         public DIBinder<T> AsSingle()
         {
-            _scope = DIContainer.BindingScope.Singleton;
+            _scope = DiContainer.BindingScope.Singleton;
             return this;
         }
 
         public DIBinder<T> AsTransient()
         {
-            _scope = DIContainer.BindingScope.Transient;
+            _scope = DiContainer.BindingScope.Transient;
             return this;
         }
     }

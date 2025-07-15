@@ -18,7 +18,7 @@ namespace Core.GameAudio
         [SerializeField] private float defaultVolume = 1f;
         [SerializeField] private float defaultFadeTime = 1f;
         
-        public override void InstallBindings(DIContainer container)
+        public override void InstallBindings(DiContainer container)
         {
             Debug.Log("[AudioContextInstaller] Installing audio bindings...");
             
@@ -38,7 +38,7 @@ namespace Core.GameAudio
             Debug.Log("[AudioContextInstaller] Audio bindings installed successfully!");
         }
         
-        private void InstallAudioServices(DIContainer container)
+        private void InstallAudioServices(DiContainer container)
         {
             // Audio Manager - Core audio system
             if (audioManager != null)
@@ -63,7 +63,7 @@ namespace Core.GameAudio
             }
         }
         
-        private void InstallAudioSettings(DIContainer container)
+        private void InstallAudioSettings(DiContainer container)
         {
             // Audio Settings - Configuration values
             var audioSettings = new AudioSettings

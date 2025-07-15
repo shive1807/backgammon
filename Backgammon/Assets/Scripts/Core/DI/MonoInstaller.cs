@@ -4,6 +4,6 @@ namespace Core.DI
 {
     public abstract class MonoInstaller : MonoBehaviour
     {
-        public abstract void InstallBindings(DIContainer container);
+        public abstract void InstallBindings(DiContainer container);
     }
 }

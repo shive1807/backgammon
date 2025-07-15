@@ -57,7 +57,7 @@ namespace Core.UiSystems
         [Inject] private readonly UiRoot uiRoot;
 
         [Inject]
-        private readonly DIContainer diContainer;
+        private readonly DiContainer diContainer;
 
         public void Dispose()
         {

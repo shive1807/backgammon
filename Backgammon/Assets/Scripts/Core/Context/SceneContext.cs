@@ -8,9 +8,9 @@ namespace Core.Context
     {
         [SerializeField] private List<MonoInstaller> installers = new();
         
-        private DIContainer sceneContainer;
+        private DiContainer sceneContainer;
 
-        public DIContainer Container => sceneContainer;
+        public DiContainer Container => sceneContainer;
 
         private void Awake()
         {
@@ -20,7 +20,7 @@ namespace Core.Context
         private void Initialize()
         {
             // Create scene container with project container as parent
-            sceneContainer = new DIContainer();
+            sceneContainer = new DiContainer();
             
             // Copy project bindings to scene container
             // (In a full implementation, you'd want parent-child container relationship)
