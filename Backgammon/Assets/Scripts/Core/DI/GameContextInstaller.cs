@@ -9,6 +9,8 @@ namespace Core.DI
     /// Main context installer for the backgammon game.
     /// Registers all core services and managers with the DI container.
     /// </summary>
+    ///
+    [DefaultExecutionOrder(-100)]
     public class GameContextInstaller : MonoInstaller
     {
         [Header("Core Game Services")]

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Core.DI;
 using UnityEngine;
 
 namespace Core.UiSystems
@@ -43,21 +44,20 @@ namespace Core.UiSystems
         bool BackButtonPressed();
     }
     
-    
+    public static class UiSystemConstants
+    {
+        public const int PlaneBuffer = 10;
+        public const float PlaneDistanceBetweenLayerOrdinals = 10;
+        public const float MinPlaneDistance = 0.1f;
+        public const float StartPlaneDistance = 5;
+    }
     
     public class UiSystem : IUiSystem, IDisposable
     {
-        // Start is called once before the first execution of Update after the MonoBehaviour is created
-        void Start()
-        {
-        
-        }
+        [Inject] private readonly UiRoot uiRoot;
 
-        // Update is called once per frame
-        void Update()
-        {
-        
-        }
+        [Inject]
+        private readonly DIContainer diContainer;
 
         public void Dispose()
         {
@@ -154,5 +154,90 @@ namespace Core.UiSystems
                 uiLayer.UnloadAllUi();
             }
         }
+        
+        private void UiCanvasLayer(UiCanvasLayerDefinition canvasLayerDefinition)
+        {
+            if (HasUiCanvasLayer(canvasLayerDefinition))
+            {
+                return;
+            }
+
+            InitUiCamera(canvasLayerDefinition);
+
+            string layerName = $"{canvasLayerDefinition.Name} (Ordinal: {canvasLayerDefinition.Ordinal}) ";
+            GameObject layerGameObject = new GameObject(layerName);
+            layerGameObject.transform.SetParent(uiRoot.transform);
+
+            UiCanvasLayer uiCanvasLayer = layerGameObject.AddComponent<UiCanvasLayer>();
+            uiCanvasLayer.Init(canvasLayerDefinition, diContainer, uiRoot.UiCamera);
+            uiCanvasLayer.UiLoaded += OnUiLoaded;
+            uiCanvasLayer.UiOpened += OnUiOpened;
+            uiCanvasLayer.UiClosed += OnUiClosed;
+            uiCanvasLayer.OpacityUpdated += OnOpacityUpdated;
+            canvasLayerMap.Add(canvasLayerDefinition, uiCanvasLayer);
+
+            SortUiCanvasLayers();
+        }
+        
+        private bool HasUiCanvasLayer(UiCanvasLayerDefinition canvasLayerDefinition)
+        {
+            return canvasLayerMap.ContainsKey(canvasLayerDefinition);
+        }
+        
+        private void InitUiCamera(UiCanvasLayerDefinition canvasLayerDefinition)
+        {
+            float layerPlaneDistance = canvasLayerDefinition.Ordinal * UiSystemConstants.PlaneDistanceBetweenLayerOrdinals + UiSystemConstants.PlaneBuffer;
+            uiRoot.UiCamera.nearClipPlane = Mathf.Min(uiRoot.UiCamera.nearClipPlane, -layerPlaneDistance);
+
+            const float minNearClipPlane = 0.01f;
+            uiRoot.UiCamera.nearClipPlane = Math.Max(uiRoot.UiCamera.nearClipPlane, minNearClipPlane);
+
+            uiRoot.UiCamera.farClipPlane = Mathf.Max(uiRoot.UiCamera.farClipPlane, layerPlaneDistance);
+
+            uiRoot.UiCamera.transform.SetAsLastSibling();
+        }
+
+        private void SortUiCanvasLayers()
+        {
+            UiCanvasLayer[] layers = uiRoot.GetComponentsInChildren<UiCanvasLayer>();
+            layers = layers.OrderBy(x => x.UiCanvasLayerDefinition.Ordinal).ToArray();
+
+            for (int i = 0; i < layers.Length; i++)
+            {
+                UiCanvasLayer uiCanvasLayer = layers[i];
+                uiCanvasLayer.gameObject.transform.SetSiblingIndex(i);
+            }
+        }
+        
+        private void OnUiLoaded(UiViewDefinition uiViewDefinition, UiCanvasLayerDefinition uiCanvasLayerDefinition)
+        {
+            UiLoaded(uiViewDefinition, uiCanvasLayerDefinition);
+        }
+
+        private void OnUiOpened(UiViewDefinition uiViewDefinition, UiCanvasLayerDefinition uiCanvasLayerDefinition)
+        {
+            UiOpened(uiViewDefinition, uiCanvasLayerDefinition);
+        }
+
+        private void OnUiClosed(UiViewDefinition uiViewDefinition, UiCanvasLayerDefinition uiCanvasLayerDefinition)
+        {
+            UiClosed(uiViewDefinition, uiCanvasLayerDefinition);
+        }
+        
+        private void OnOpacityUpdated()
+        {
+            UiCanvasLayer[] layers = uiRoot.GetComponentsInChildren<UiCanvasLayer>();
+
+            bool isOccluded = false;
+            foreach (UiCanvasLayer canvasLayer in layers)
+            {
+                canvasLayer.Visible = !isOccluded;
+                if (canvasLayer.IsOpaque)
+                {
+                    isOccluded = true;
+                }
+            }
+        }
+
     }
 }
