@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3584c365808ce47fc88c88dfa5fc5c90, type: 3}
+  m_Name: AudioEvent
+  m_EditorClassIdentifier: 
+  eventName: 
+  clipDefinition:
+    id: 0e92d715-3b46-48bc-b58f-e9ecd5467b2c
+    displayName: 
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    spatialBlend: 0
+    audioType: 0
+    category: 0
+    tags: []
+    loop: 0
+    fadeInTime: 0
+    fadeOutTime: 0
+    priority: 128
+    randomizeVolume: 0
+    volumeVariation: 0.1
+    randomizePitch: 0
+    pitchVariation: 0.1
+    cooldownTime: 0
+    preventOverlap: 0
+    minDistance: 1
+    maxDistance: 500
+    rolloffMode: 0
+    bypassEffects: 0
+    bypassListenerEffects: 0
+    bypassReverbZones: 0
+    outputAudioMixerGroup: 0
+  useRandomPosition: 0
+  randomPositionRadius: 5
+  followTransform: 0
+  requiresGameObject: 0
+  requiresValidPosition: 0
+  minimumTimeBetweenTriggers: 0

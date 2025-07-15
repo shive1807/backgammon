@@ -407,6 +407,56 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f79b16cc21204942adba8e86e4f3a5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &474492353
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 474492355}
+  - component: {fileID: 474492354}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &474492354
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 474492353}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4a2b5ae670ad4c9b95d7d1343636de0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  audioDatabase: {fileID: 11400000, guid: ef491da015e3f4cf49f3dc965d5cc822, type: 2}
+  audioMixer: {fileID: 0}
+  audioSourcePoolSize: 20
+  audioSourcePrefab: {fileID: 0}
+  enableDebugLogs: 0
+  defaultFadeTime: 1
+--- !u!4 &474492355
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 474492353}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.5562629, y: 2.9861524, z: -0.08423627}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &474856218
 GameObject:
   m_ObjectHideFlags: 0
@@ -1284,6 +1334,7 @@ GameObject:
   - component: {fileID: 1006681794}
   - component: {fileID: 1006681795}
   - component: {fileID: 1006681796}
+  - component: {fileID: 1006681797}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1347,6 +1398,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b004d224d97f46e5a89333467877ce5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1006681797
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1006681792}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bed4677f583364a3598280b2d1f20dfd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _playerData:
+    playerName: Player
+    level: 1
+    coins: 1000
+    gems: 50
+    experience: 0
 --- !u!1 &1084233106
 GameObject:
   m_ObjectHideFlags: 0
@@ -1767,7 +1836,7 @@ MonoBehaviour:
   turnManager: {fileID: 1006681796}
   gameBoard: {fileID: 678470233}
   commandManager: {fileID: 251596459}
-  playerDataManager: {fileID: 0}
+  playerDataManager: {fileID: 1006681797}
   prefabManager: {fileID: 1006681795}
   audioManager: {fileID: 0}
   canvasManager: {fileID: 2064539461}
@@ -2263,3 +2332,4 @@ SceneRoots:
   - {fileID: 251596461}
   - {fileID: 69982895}
   - {fileID: 1741971445}
+  - {fileID: 474492355}

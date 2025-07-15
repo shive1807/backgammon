@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 491bde6611f544712ab7b2d955161635, type: 3}
+  m_Name: GameAudioCatalog
+  m_EditorClassIdentifier: 
+  buttonClickId: ui_button_click
+  buttonHoverId: ui_button_hover
+  menuOpenId: ui_menu_open
+  menuCloseId: ui_menu_close
+  cardDrawId: gameplay_card_draw
+  cardPlayId: gameplay_card_play
+  cardShuffleId: gameplay_card_shuffle
+  timerWarningId: gameplay_timer_warning
+  winId: feedback_win
+  loseId: feedback_lose
+  errorId: feedback_error
+  successId: feedback_success
